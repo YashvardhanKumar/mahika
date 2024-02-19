@@ -16,7 +16,7 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 # https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
 # In Windows, build-name is used as the major, minor, and patch parts
 # of the product and file versions while build-number is used as the build suffix.
-version: 0.1.0-beta-04
+version: 0.1.0-beta-08+8
 
 environment:
   sdk: '>=3.0.3 <4.0.0'
@@ -36,9 +36,9 @@ dependencies:
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.2
   google_fonts: ^5.0.0
-  firebase_auth: ^4.6.3
-  firebase_core: ^2.14.0
-  cloud_firestore: ^4.8.1
+  firebase_auth: ^4.17.4
+  firebase_core: ^2.25.4
+  cloud_firestore: ^4.15.4
   intl: ^0.18.1
   url_launcher: ^6.1.11
   flutter_phone_direct_caller: ^2.1.1
@@ -55,6 +55,13 @@ dependencies:
   rename: ^2.1.1
   media_store_plus: ^0.0.7
   path_provider: ^2.1.1
+  pinput: ^4.0.0
+  json_serializable: ^6.7.1
+  firebase_app_check: ^0.2.1+13
+  font_awesome_flutter: ^10.7.0
+  spreadsheet_decoder: ^2.2.0
+  video_thumbnail: ^0.5.3
+  get: ^4.6.6
 
 flutter_launcher_icons:
   android: true
@@ -73,6 +80,7 @@ dev_dependencies:
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
   flutter_lints: ^2.0.0
+  build_runner:
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec

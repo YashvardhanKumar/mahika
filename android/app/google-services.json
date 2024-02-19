@@ -7,15 +7,19 @@
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:649864211385:android:6235b922450760a861e468",
+        "mobilesdk_app_id": "1:649864211385:android:4abe106af7f1c43961e468",
         "android_client_info": {
-          "package_name": "com.example.mahikav"
+          "package_name": "com.mahikav"
         }
       },
       "oauth_client": [
         {
-          "client_id": "649864211385-k3p6imv65i119uuc447sjuqjaa57ss5p.apps.googleusercontent.com",
-          "client_type": 3
+          "client_id": "649864211385-o1oqfqnq9s5v66sb94alrngmc65h0ele.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.mahikav",
+            "certificate_hash": "b25355b8b7dbbe7424b17f28f9793896054d18cf"
+          }
         }
       ],
       "api_key": [
@@ -26,10 +30,6 @@
       "services": {
         "appinvite_service": {
           "other_platform_oauth_client": [
-            {
-              "client_id": "649864211385-k3p6imv65i119uuc447sjuqjaa57ss5p.apps.googleusercontent.com",
-              "client_type": 3
-            },
             {
               "client_id": "649864211385-8nbam4go8buvpvel77gvphuufamvnptc.apps.googleusercontent.com",
               "client_type": 2,

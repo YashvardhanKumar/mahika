@@ -1,3 +1,11 @@
+plugins {
+    id "com.android.application"
+    id "kotlin-android"
+    id "dev.flutter.flutter-gradle-plugin"
+    id "com.google.gms.google-services"
+    id "com.google.firebase.crashlytics"
+}
+
 def localProperties = new Properties()
 def localPropertiesFile = rootProject.file('local.properties')
 if (localPropertiesFile.exists()) {
@@ -6,10 +14,10 @@ if (localPropertiesFile.exists()) {
     }
 }
 
-def flutterRoot = localProperties.getProperty('flutter.sdk')
-if (flutterRoot == null) {
-    throw new GradleException("Flutter SDK not found. Define location with flutter.sdk in the local.properties file.")
-}
+//def flutterRoot = localProperties.getProperty('flutter.sdk')
+//if (flutterRoot == null) {
+//    throw new GradleException("Flutter SDK not found. Define location with flutter.sdk in the local.properties file.")
+//}
 
 def flutterVersionCode = localProperties.getProperty('flutter.versionCode')
 if (flutterVersionCode == null) {
@@ -26,13 +34,16 @@ if (keystorePropertiesFile.exists()) {
     keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
 }
 
-apply plugin: 'com.android.application'
-apply plugin: 'kotlin-android'
-apply from: "$flutterRoot/packages/flutter_tools/gradle/flutter.gradle"
+
+//apply plugin: 'com.android.application'
+//apply plugin: 'kotlin-android'
+//apply from: "$flutterRoot/packages/flutter_tools/gradle/flutter.gradle"
+//apply plugin: 'com.google.gms.google-services'
+//apply plugin: 'com.google.firebase.crashlytics'
 
 android {
-    namespace "com.example.mahikav"
-    compileSdkVersion 34
+    namespace "com.mahikav"
+    compileSdkVersion flutter.compileSdkVersion
     ndkVersion flutter.ndkVersion
 
     compileOptions {
@@ -55,7 +66,7 @@ android {
         // For more information, see: https://docs.flutter.dev/deployment/android#reviewing-the-gradle-build-configuration.
         minSdkVersion 19
         multiDexEnabled true
-        targetSdkVersion 34
+        targetSdkVersion flutter.targetSdkVersion
         versionCode flutterVersionCode.toInteger()
         versionName flutterVersionName
     }
@@ -80,13 +91,13 @@ flutter {
 }
 
 dependencies {
-    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.8.22"
     implementation "androidx.multidex:multidex:2.0.1"
     // Import the BoM for the Firebase platform
-    implementation platform('com.google.firebase:firebase-bom:32.1.1')
-
+    implementation platform("com.google.firebase:firebase-bom:32.7.2")
     // Add the dependency for the Firebase Authentication library
     // When using the BoM, you don't specify versions in Firebase library dependencies
-    implementation 'com.google.firebase:firebase-auth-ktx'
-    implementation 'com.google.android.material:material:1.10.0'
+    implementation 'com.google.firebase:firebase-auth'
+    implementation 'com.google.android.material:material:1.11.0'
+    implementation 'com.google.firebase:firebase-crashlytics:18.6.2'
 }
