@@ -1,161 +1,202 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:mahikav/screens/auth/pending_verification.dart';
 
 import '../../admin functions/add_place_admin_func.dart';
 import '../../components/emergency_buttons.dart';
 import '../../constants.dart';
-import '../../model/users/user_model.dart';
 import '../chats/groups/community_topic.dart';
-import 'communities/controllers/community_controller.dart';
-import 'communities/controllers/user_data_controller.dart';
 
-class HomePage extends StatelessWidget {
-  HomePage({Key? key}) : super(key: key);
-
-  final c = Get.put<CommunityController>(CommunityController());
-  final u = Get.find<UserDataController>();
+class HomePage extends StatefulWidget {
+  const HomePage({Key? key}) : super(key: key);
 
   @override
+  State<HomePage> createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> {
+  @override
   Widget build(BuildContext context) {
-    final curUser = u.users
-        .where((element) => element.doc!.id == auth.currentUser?.uid)
-        .firstOrNull;
-    if (curUser != null) {
-      // print(userData.data!.data());
-      if (curUser.category == UserCategory.Admin ||
-          !(curUser.isVerifiedUser ?? false)) {
-        return Scaffold(
-          floatingActionButton: curUser.category == UserCategory.Member
-              ? EmergencyButtons()
-              : null,
-          appBar: AppBar(
-            title: const Text('Communities'),
-            // actions: [
-            //   IconButton(
-            //       onPressed: () {},
-            //       icon: const Icon(Icons.search_rounded))
-            // ],
-          ),
-          body: Builder(builder: (context) {
-            bool isNotAdmin = curUser.category != UserCategory.Admin;
-            if (isNotAdmin && !(curUser.isVerifiedUser ?? false)) {
-              return pendingVerification(
-                curUser.isVerifiedUser,
-              );
-            }
-            return ListView(
-              children: [
-                if (curUser.category == UserCategory.Admin)
-                  ListTile(
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 20),
-                    leading: const Icon(
-                      Icons.groups_rounded,
-                      size: 45,
-                      color: kColorDark,
-                    ),
-                    title: Text(
-                      'Create New Community',
-                      style: GoogleFonts.poppins(
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    onTap: () {
-                      Get.to(const AddPlace_Admin());
-                    },
-                  ),
-                if (curUser.category == UserCategory.Admin)
-                  const Divider(
-                    indent: 20,
-                    endIndent: 20,
-                    height: 0,
-                  ),
-                Column(
-                  children: List.generate(
-                    c.communities.length,
-                    (index) => Material(
-                      clipBehavior: Clip.hardEdge,
-                      shape: const RoundedRectangleBorder(
-                          side: BorderSide(color: Color(0xffeeeeee))),
-                      child: InkWell(
+    return StreamBuilder<DocumentSnapshot>(
+      stream:
+      firestore.collection('users').doc(auth.currentUser!.uid).snapshots(),
+      builder: (context, userData) {
+        if (userData.hasData) {
+          print(userData.data!.data());
+          if (userData.data!['category'] == 'Admin' || !(userData.data!['isVerifiedUser'] ?? false)) {
+            return Scaffold(
+              floatingActionButton:
+              userData.hasData && userData.data!['category'] == 'Member'
+                  ? EmergencyButtons()
+                  : null,
+              appBar: AppBar(
+                title: const Text('Communities'),
+                actions: [
+                  IconButton(
+                      onPressed: () {}, icon: const Icon(Icons.search_rounded))
+                ],
+              ),
+              body: Builder(builder: (context) {
+                bool isNotAdmin = userData.data!['category'] != 'Admin' &&
+                    userData.data!['category'] != null;
+                if (isNotAdmin &&
+                    !(userData.data!['isVerifiedUser'] ?? false)) {
+                  return pendingVerification(
+                    userData.data!['isVerifiedUser'],
+                  );
+                }
+                return ListView(
+                  children: [
+                    if (userData.data!['category'] == 'Admin')
+                      ListTile(
+                        contentPadding:
+                        const EdgeInsets.symmetric(horizontal: 20),
+                        leading: const Icon(
+                          Icons.groups_rounded,
+                          size: 45,
+                          color: kColorDark,
+                        ),
+                        title: Text(
+                          'Create New Community',
+                          style: GoogleFonts.poppins(
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
                         onTap: () {
-                          Get.to(
-                            CommunitiesTopicList(
-                              community: c.communities[index],
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => AddPlace_Admin(),
                             ),
-                            arguments: {
-                              'communities': c.communities[index],
-                            },
                           );
                         },
-                        child: Container(
-                          width: double.infinity,
-                          padding: const EdgeInsets.all(10.0),
-                          child: Row(
-                            children: [
-                              CircleAvatar(
-                                radius: 25,
-                                backgroundColor: Colors.white,
-                                child: Padding(
-                                  padding: const EdgeInsets.all(5.0),
-                                  child: Image.asset(
-                                    'images/logo.png',
-                                    errorBuilder: (context, obj, stack) =>
-                                        const Icon(
-                                      Icons.location_city_rounded,
-                                      size: 32,
+                      ),
+                    if (userData.data!['category'] == 'Admin')
+                      const Divider(
+                        indent: 20,
+                        endIndent: 20,
+                        height: 0,
+                      ),
+                    StreamBuilder<QuerySnapshot>(
+                        stream: firestore.collection('communities').snapshots(),
+                        builder: (context, snapshot) {
+                          if (snapshot.hasData) {
+                            final data = snapshot.data!.docs;
+                            return Column(
+                              children: List.generate(
+                                snapshot.data!.size,
+                                    (index) => Padding(
+                                  padding: const EdgeInsets.all(10.0),
+                                  child: Material(
+                                    clipBehavior: Clip.hardEdge,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(10),
+                                    ),
+                                    child: InkWell(
+                                      onTap: () {
+                                        Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder: (_) =>
+                                                CommunitiesTopicList(
+                                                  community:
+                                                  data[index],
+                                                ),
+                                          ),
+                                        );
+                                      },
+                                      child: SizedBox(
+                                        width: double.infinity,
+                                        child: Padding(
+                                          padding: const EdgeInsets.all(10.0),
+                                          child: Row(
+                                            children: [
+                                              CircleAvatar(
+                                                radius: 25,
+                                                backgroundColor: Colors.white,
+                                                child: Padding(
+                                                  padding:
+                                                  const EdgeInsets.all(5.0),
+                                                  child: Image.asset(
+                                                    'images/logo.png',
+                                                    errorBuilder:
+                                                        (context, obj, stack) =>
+                                                        Icon(
+                                                          Icons
+                                                              .location_city_rounded,
+                                                          size: 32,
+                                                        ),
+                                                  ),
+                                                ),
+                                              ),
+                                              const SizedBox(
+                                                width: 10,
+                                              ),
+                                              Column(
+                                                crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                                children: [
+                                                  Text(
+                                                    data[index]['city'],
+                                                    style: GoogleFonts.poppins(
+                                                      fontWeight:
+                                                      FontWeight.w600,
+                                                      fontSize: 16,
+                                                    ),
+                                                  ),
+                                                  const SizedBox(height: 5),
+                                                  Text(
+                                                    data[index]['state'],
+                                                    style: GoogleFonts.poppins(
+                                                      fontWeight:
+                                                      FontWeight.w600,
+                                                      color: kColorDark,
+                                                    ),
+                                                  )
+                                                ],
+                                              )
+                                            ],
+                                          ),
+                                        ),
+                                      ),
                                     ),
                                   ),
                                 ),
                               ),
-                              const SizedBox(width: 10),
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    c.communities[index].city,
-                                    style: GoogleFonts.poppins(
-                                      fontWeight: FontWeight.w600,
-                                      fontSize: 16,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 5),
-                                  Text(
-                                    c.communities[index].state,
-                                    style: GoogleFonts.poppins(
-                                      fontWeight: FontWeight.w600,
-                                      color: kColorDark,
-                                    ),
-                                  )
-                                ],
-                              )
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ],
+                            );
+                          }
+                          return Center(
+                            child: CircularProgressIndicator(color: kColorDark),
+                          );
+                        }),
+                  ],
+                );
+              }),
             );
-          }),
+          }
+          return StreamBuilder<QuerySnapshot>(
+              stream: firestore
+                  .collection('communities')
+                  .where('city', isEqualTo: userData.data!['city'])
+                  .where('state', isEqualTo: userData.data!['state'])
+                  .limit(1)
+                  .snapshots(),
+              builder: (context, snapshot) {
+                if (snapshot.hasData) {
+                  return CommunitiesTopicList(
+                    community: snapshot.data!.docs.first,
+                  );
+                }
+                return Center(
+                  child: CircularProgressIndicator(color: kColorDark),
+                );
+              });
+        }
+        return const Center(
+          child: CircularProgressIndicator(color: kColorDark),
         );
-      }
-      return Obx(() {
-        final data = c.communities
-            .where((p) => p.city == curUser.city && p.state == curUser.state);
-        return CommunitiesTopicList(
-          community: data.first,
-        );
-      });
-    }
-    return const Center(
-      child: CircularProgressIndicator(color: kColorDark),
+      },
     );
-    // },
-    // );
-    // ,
-    // );
   }
 }

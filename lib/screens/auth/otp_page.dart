@@ -84,7 +84,7 @@ class _OTPPageState extends State<OTPPage> {
             Pinput(
               length: 6,
               androidSmsAutofillMethod:
-                  AndroidSmsAutofillMethod.smsRetrieverApi,
+                  AndroidSmsAutofillMethod.smsUserConsentApi,
               defaultPinTheme: PinTheme(
                 textStyle: const TextStyle(
                   fontSize: 32,

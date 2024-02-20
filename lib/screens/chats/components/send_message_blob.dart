@@ -4,7 +4,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
-import 'package:mahikav/model/community/community_model.dart';
 
 import '../../../constants.dart';
 import 'message_audio_player.dart';
@@ -28,7 +27,7 @@ class SendMessageBlob extends StatelessWidget {
 
   final DocumentReference? replyRef;
   final DocumentSnapshot sender;
-  final MessageModel messageData;
+  final DocumentSnapshot messageData;
   final String message;
   final DateTime time;
   final bool isFirst;
@@ -47,7 +46,7 @@ class SendMessageBlob extends StatelessWidget {
         if (!isRecieved) const Expanded(child: SizedBox()),
         Column(
           crossAxisAlignment:
-              isRecieved ? CrossAxisAlignment.start : CrossAxisAlignment.end,
+          isRecieved ? CrossAxisAlignment.start : CrossAxisAlignment.end,
           mainAxisSize: MainAxisSize.min,
           children: [
             SizedBox(
@@ -60,25 +59,25 @@ class SendMessageBlob extends StatelessWidget {
               shape: RoundedRectangleBorder(
                 borderRadius: (isRecieved)
                     ? BorderRadius.only(
-                        topRight: const Radius.circular(15),
-                        topLeft: (isFirst)
-                            ? const Radius.circular(15)
-                            : const Radius.circular(3),
-                        bottomLeft: (last)
-                            ? const Radius.circular(15)
-                            : const Radius.circular(3),
-                        bottomRight: const Radius.circular(15),
-                      )
+                  topRight: const Radius.circular(15),
+                  topLeft: (isFirst)
+                      ? const Radius.circular(15)
+                      : const Radius.circular(3),
+                  bottomLeft: (last)
+                      ? const Radius.circular(15)
+                      : const Radius.circular(3),
+                  bottomRight: const Radius.circular(15),
+                )
                     : BorderRadius.only(
                   topLeft: const Radius.circular(15),
-                        topRight: (isFirst)
-                            ? const Radius.circular(15)
-                            : const Radius.circular(3),
-                        bottomRight: (last)
-                            ? const Radius.circular(15)
-                            : const Radius.circular(3),
-                        bottomLeft: const Radius.circular(15),
-                      ),
+                  topRight: (isFirst)
+                      ? const Radius.circular(15)
+                      : const Radius.circular(3),
+                  bottomRight: (last)
+                      ? const Radius.circular(15)
+                      : const Radius.circular(3),
+                  bottomLeft: const Radius.circular(15),
+                ),
               ),
               child: Container(
                 constraints: BoxConstraints(
@@ -117,12 +116,12 @@ class SendMessageBlob extends StatelessWidget {
                                   child: Column(
                                     mainAxisSize: MainAxisSize.min,
                                     crossAxisAlignment:
-                                        CrossAxisAlignment.stretch,
+                                    CrossAxisAlignment.stretch,
                                     children: [
                                       Text(
                                         sender.id ==
-                                                FirebaseAuth
-                                                    .instance.currentUser!.uid
+                                            FirebaseAuth
+                                                .instance.currentUser!.uid
                                             ? "You"
                                             : sender['name'],
                                         style: GoogleFonts.poppins(
@@ -153,8 +152,8 @@ class SendMessageBlob extends StatelessWidget {
                       mainAxisAlignment: (replyRef != null)
                           ? MainAxisAlignment.spaceBetween
                           : isRecieved
-                              ? MainAxisAlignment.start
-                              : MainAxisAlignment.end,
+                          ? MainAxisAlignment.start
+                          : MainAxisAlignment.end,
                       children: [
                         // if (!isRecieved) const SizedBox(),
                         Flexible(
@@ -204,5 +203,3 @@ class SendMessageBlob extends StatelessWidget {
     );
   }
 }
-
-

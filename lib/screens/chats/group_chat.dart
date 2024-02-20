@@ -3,25 +3,22 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_phone_direct_caller/flutter_phone_direct_caller.dart';
-import 'package:get/get.dart';
 import 'package:intl/intl.dart';
-import 'package:mahikav/components/custom_icon_icons.dart';
-import 'package:mahikav/constants.dart';
-import 'package:mahikav/model/community/community_model.dart';
-import 'package:mahikav/model/users/user_model.dart';
-import 'package:mahikav/screens/auth/components/swipe_gesture.dart';
-import 'package:mahikav/screens/chats/group_settings.dart';
 
+import '../../components/custom_icon_icons.dart';
+import '../../constants.dart';
+import '../auth/components/swipe_gesture.dart';
 import 'components/message form/message_form.dart';
 import 'components/send_message_blob.dart';
+import 'group_settings.dart';
 
 class GroupChat extends StatefulWidget {
-  const GroupChat({Key? key, required this.user, required this.group})
+  const GroupChat(
+      {Key? key, required this.chats, required this.user, required this.group})
       : super(key: key);
-
-  // final CollectionReference chats;
-  final GroupModel group;
-  final UserModel user;
+  final QuerySnapshot chats;
+  final DocumentSnapshot group;
+  final DocumentSnapshot user;
 
   @override
   State<GroupChat> createState() => _GroupChatState();
@@ -30,7 +27,7 @@ class GroupChat extends StatefulWidget {
 class _GroupChatState extends State<GroupChat> {
   final audioPlayer = AudioPlayer();
   Offset drag = Offset.zero;
-  MessageModel? replyData;
+  DocumentSnapshot? replyData;
 
   @override
   void dispose() {
@@ -44,8 +41,9 @@ class _GroupChatState extends State<GroupChat> {
     Size size = MediaQuery.of(context).size;
     return Scaffold(
       appBar: AppBar(
-        title: Text(
-            widget.group.isGeneral ? "General" : widget.group.collegeName!),
+        title: Text((widget.group['isGeneral']
+            ? "General"
+            : widget.group['collegeName'])),
         actions: [
           IconButton(
             icon: const Icon(
@@ -57,50 +55,48 @@ class _GroupChatState extends State<GroupChat> {
               await FlutterPhoneDirectCaller.callNumber('+911090');
             },
           ),
-          if (!widget.group.isGeneral)
+          if(!widget.group['isGeneral'])
             IconButton(
               icon: const Icon(
                 CustomIcon.settings,
                 size: 32,
               ),
               onPressed: () {
-                Get.to(
-                  GroupSettings(
-                    groupRef: widget.group.doc!,
-                    address: widget.group.collegeName!,
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => GroupSettings(
+                      groupRef: widget.group.reference,
+                      address: widget.group['collegeName'],
+                    ),
                   ),
                 );
               },
             ),
         ],
       ),
-      body: StreamBuilder<QuerySnapshot<MessageModel>>(
-          stream: widget.group.messages!
-              .withConverter<MessageModel>(
-                fromFirestore: (data, options) {
-                  return MessageModel.fromJson(data);
-                },
-                toFirestore: (data, opt) => data.toJson(),
-              )
+      body: StreamBuilder<QuerySnapshot>(
+          stream: widget.group.reference
+              .collection('messages')
               .orderBy('timeSent', descending: true)
               .snapshots(),
           builder: (context, snapshot) {
             if (snapshot.hasData) {
-              final data = snapshot.data!.docs.map((e) => e.data()).toList();
+              final data = snapshot.data!.docs;
               List<Widget> list = [];
               if (data.isNotEmpty) {
                 final today = DateTime.now().day;
-                DateTime day = data[0].timeSent.toDate();
+                DateTime day = data[0]['timeSent'].toDate();
                 int prevDay = 0;
 
                 for (int i = 0; i < data.length; i++) {
                   list.add(
                     StreamBuilder<DocumentSnapshot>(
-                        stream: data[i].sentBy!.snapshots(),
+                        stream: data[i]['sentBy'].snapshots(),
                         builder: (context, person) {
                           if (person.hasData) {
                             bool isCur =
-                                data[i].sentBy!.id == auth.currentUser!.uid;
+                                data[i]['sentBy'].id == auth.currentUser!.uid;
 
                             return SwipeGesture(
                               background: Container(),
@@ -110,34 +106,34 @@ class _GroupChatState extends State<GroupChat> {
                                 setState(() {});
                               },
                               child: SendMessageBlob(
-                                replyRef: data[i].replyTo,
+                                replyRef: data[i]['replyTo'],
                                 onCancel: () {
                                   replyData = null;
                                   setState(() {});
                                 },
                                 size: size,
-                                fileMessage: data[i].message.isEmpty
-                                    ? data[i].fileMessage
+                                fileMessage: data[i]['message'].isEmpty
+                                    ? data[i]['fileMessage']
                                     : null,
-                                message: data[i].message,
-                                time: data[i].timeSent.toDate(),
+                                message: data[i]['message'],
+                                time: data[i]['timeSent'].toDate(),
                                 isFirst: (i < data.length - 1 &&
-                                        (data[i + 1].sentBy?.id !=
-                                                data[i].sentBy?.id ||
-                                            data[i].timeSent.toDate().day >
-                                                data[i + 1]
-                                                    .timeSent
-                                                    .toDate()
-                                                    .day)) ||
+                                    (data[i + 1]['sentBy'].id !=
+                                        data[i]['sentBy'].id ||
+                                        data[i]['timeSent'].toDate().day >
+                                            data[i + 1]['timeSent']
+                                                .toDate()
+                                                .day)) ||
                                     i == data.length - 1,
                                 isLast: (i > 0 &&
-                                        (data[i].sentBy?.id !=
-                                                data[i - 1].sentBy?.id ||
-                                            data[i - 1].timeSent.toDate().day >
-                                                data[i]
-                                                    .timeSent
-                                                    .toDate()
-                                                    .day)) ||
+                                    (data[i]['sentBy'].id !=
+                                        data[i - 1]['sentBy'].id ||
+                                        data[i - 1]['timeSent']
+                                            .toDate()
+                                            .day >
+                                            data[i]['timeSent']
+                                                .toDate()
+                                                .day)) ||
                                     i == 0,
                                 isRecieved: !isCur,
                                 name: isCur ? 'You' : person.data?['name'],
@@ -150,33 +146,34 @@ class _GroupChatState extends State<GroupChat> {
                           return Container();
                         }),
                   );
-                  int dayByNow = prevDay = -data[i]
-                      .timeSent
+                  int dayByNow = prevDay = -(data[i]['timeSent'] as Timestamp)
                       .toDate()
                       .difference(DateTime.now())
                       .inDays;
                   if (i < data.length - 1) {
-                    prevDay =
-                        -data[i + 1].timeSent.toDate().difference(day).inDays;
-                    int day_ = data[i]
-                        .timeSent
+                    prevDay = -(data[i + 1]['timeSent'] as Timestamp)
                         .toDate()
-                        .difference(data[i + 1].timeSent.toDate())
+                        .difference(day)
+                        .inDays;
+                    int day_ = (data[i]['timeSent'] as Timestamp)
+                        .toDate()
+                        .difference(
+                        (data[i + 1]['timeSent'] as Timestamp).toDate())
                         .inDays;
                     if (day_ != 0) {
                       String text = (dayByNow == 0)
                           ? 'Today'
                           : (dayByNow == 1)
-                              ? 'Yesterday'
-                              : DateFormat("dd/MM/yyyy")
-                                  .format(data[i].timeSent.toDate());
+                          ? 'Yesterday'
+                          : DateFormat("dd/MM/yyyy")
+                          .format(data[i]['timeSent'].toDate());
                       list.add(
                         Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             Padding(
                               padding:
-                                  const EdgeInsets.symmetric(vertical: 10.0),
+                              const EdgeInsets.symmetric(vertical: 10.0),
                               child: Material(
                                 shape: const StadiumBorder(),
                                 color: Colors.grey.shade200,
@@ -194,16 +191,16 @@ class _GroupChatState extends State<GroupChat> {
                         ),
                       );
                     }
-                    day = data[i + 1].timeSent.toDate();
+                    day = (data[i + 1]['timeSent'] as Timestamp).toDate();
                   }
                 }
                 prevDay = -day.difference(DateTime.now()).inHours;
                 String text = (prevDay >= 0 && prevDay < 24)
                     ? 'Today'
                     : (prevDay >= 24 && prevDay < 48)
-                        ? 'Yesterday'
-                        : DateFormat("dd/MM/yyyy")
-                            .format(data[data.length - 1].timeSent.toDate());
+                    ? 'Yesterday'
+                    : DateFormat("dd/MM/yyyy")
+                    .format(data[data.length - 1]['timeSent'].toDate());
                 list.add(
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
@@ -247,7 +244,7 @@ class _GroupChatState extends State<GroupChat> {
                         replyData = null;
                         setState(() {});
                       },
-                      message: widget.group.messages!,
+                      group: widget.group.reference,
                       sender: widget.user,
                     ),
                   ],

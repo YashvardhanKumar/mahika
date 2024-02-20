@@ -61,7 +61,7 @@ class _FirstPageState extends State<FirstPage> {
                                   CircleAvatar(
                                     radius: 65,
                                     foregroundImage:
-                                        AssetImage('images/police.png'),
+                                    AssetImage('images/police.png'),
                                   ),
                                   Text(
                                     'Police',
@@ -97,7 +97,7 @@ class _FirstPageState extends State<FirstPage> {
                                   CircleAvatar(
                                     radius: 65,
                                     foregroundImage:
-                                        AssetImage('images/student.png'),
+                                    AssetImage('images/student.png'),
                                   ),
                                   Text(
                                     'Member',
@@ -128,21 +128,21 @@ class _FirstPageState extends State<FirstPage> {
       bottomNavigationBar: Padding(
         padding: EdgeInsets.all(10),
         child:
-            ((isPolice != null && isPolice!) || (isMember != null && isMember!))
-                ? CustomFilledButton(
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => LoginSignUp(
-                            isPolice: isPolice!,
-                          ),
-                        ),
-                      );
-                    },
-                    label: 'Continue',
-                  )
-                : null,
+        ((isPolice != null && isPolice!) || (isMember != null && isMember!))
+            ? CustomFilledButton(
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => LoginSignUp(
+                  isPolice: isPolice!,
+                ),
+              ),
+            );
+          },
+          label: 'Continue',
+        )
+            : null,
       ),
     );
   }

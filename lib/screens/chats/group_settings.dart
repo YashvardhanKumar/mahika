@@ -3,27 +3,22 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:mahikav/constants.dart';
 
-class GroupSettings extends StatefulWidget {
+class GroupSettings extends StatelessWidget {
   const GroupSettings(
-      {super.key, required this.groupRef, required this.address});
+      {super.key, required this.groupRef, required this.address,});
 
   final DocumentReference groupRef;
   final String address;
 
   @override
-  State<GroupSettings> createState() => _GroupSettingsState();
-}
-
-class _GroupSettingsState extends State<GroupSettings> {
-  @override
   Widget build(BuildContext context) {
     return StreamBuilder<DocumentSnapshot>(
-      stream: widget.groupRef.snapshots(),
+      stream: groupRef.snapshots(),
       builder: (context, group) {
         return StreamBuilder<QuerySnapshot>(
           stream: FirebaseFirestore.instance
               .collection('users')
-              .where('collegeAddress', isEqualTo: widget.address)
+              .where('collegeAddress', isEqualTo: address)
               .snapshots(),
           builder: (context, users) {
             if (users.hasData) {
@@ -53,7 +48,7 @@ class _GroupSettingsState extends State<GroupSettings> {
                     Column(
                       children: List.generate(
                         users.data!.size,
-                        (index) {
+                            (index) {
                           print(users.data!);
                           return ListTile(
                             leading: CircleAvatar(

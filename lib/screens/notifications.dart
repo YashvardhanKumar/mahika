@@ -1,7 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:mahikav/components/record_player.dart';
 
@@ -23,18 +22,15 @@ class _NotificationsState extends State<Notifications> {
     // TODO: implement initState
     super.initState();
     _firestore.collection('emergency').get().then((value) {
-      for (var v in value.docs) {
-        v.reference.update({"isSeen": true});
+      for(var v in value.docs) {
+        v.reference.update({"isSeen":true});
       }
     });
   }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Notifications'),
-      ),
+      appBar: AppBar(title: Text('Notifications'),),
       body: StreamBuilder<DocumentSnapshot>(
           stream: _firestore
               .collection('users')
@@ -64,9 +60,7 @@ class _NotificationsState extends State<Notifications> {
                                 contentPadding:
                                 const EdgeInsets.symmetric(horizontal: 10),
                                 onTap: () async {
-                                  Get.to(const RecordPlayer(),
-                                      arguments: {'url': i['audio']});
-                                  // Navigator.push(context, MaterialPageRoute(builder: (_) => RecordPlayer(url: i['audio'],)));
+                                  Navigator.push(context, MaterialPageRoute(builder: (_) => RecordPlayer(url: i['audio'],)));
                                 },
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(10),

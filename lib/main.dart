@@ -6,8 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 
 import 'firebase_options.dart';
-import 'screens/home/communities/controllers/community_controller.dart';
-import 'screens/home/communities/controllers/user_data_controller.dart';
+import 'screens/home/home_page.dart';
 import 'screens/landing/intro_page.dart';
 
 void main() async {
@@ -27,7 +26,7 @@ void main() async {
       appleProvider: AppleProvider.debug,
     );
   }
- // FirebaseAuth.instance.signOut();
+  // FirebaseAuth.instance.signOut();
   runApp(const MyApp());
 }
 
@@ -37,28 +36,18 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GetMaterialApp(
-      title: 'Mahika',
-      theme: ThemeData(
-        useMaterial3: true,
-        scaffoldBackgroundColor: Colors.white,
-        appBarTheme: AppBarTheme(
-          backgroundColor: Colors.white,
-          surfaceTintColor: Colors.white,
-          systemOverlayStyle: SystemChrome.latestStyle,
-        ),
+        title: 'Mahika',
+        theme: ThemeData(
+          useMaterial3: true,
+          scaffoldBackgroundColor: Colors.white,
+          appBarTheme: AppBarTheme(
+            backgroundColor: Colors.white,
+            surfaceTintColor: Colors.white,
+            systemOverlayStyle: SystemChrome.latestStyle,
+          ),
 
-      ),
-      home: LogoPage(),
-      initialBinding: InitBindings(),
+        ),
+        home: LogoPage()
     );
   }
-}
-
-class InitBindings extends Bindings {
-  @override
-  void dependencies() {
-    Get.put(CommunityController());
-    Get.put(UserDataController());
-  }
-
 }

@@ -7,9 +7,15 @@ import 'package:mahikav/model/community/community_model.dart';
 import '../components/buttons/filled_buttons.dart';
 import '../components/text_form_field.dart';
 
+import 'package:flutter/material.dart';
+import 'package:mahikav/constants.dart';
+
+import '../components/buttons/filled_buttons.dart';
+import '../components/text_form_field.dart';
+
 class AddCollege_Admin extends StatefulWidget {
   const AddCollege_Admin({Key? key, required this.community}) : super(key: key);
-  final CommunityModel community;
+  final DocumentSnapshot community;
 
   @override
   State<AddCollege_Admin> createState() => _AddCollege_AdminState();
@@ -49,17 +55,23 @@ class _AddCollege_AdminState extends State<AddCollege_Admin> {
           onPressed: isClicked
               ? null
               : () async {
-                  isClicked = true;
-                  setState(() {});
-                  final data = GroupModel(collegeName: collegeName.text,isGeneral: false,updatedAt: Timestamp.now());
-                  await widget.community.doc!.collection('groups').add(data.toJson());
-                  final clg = CollegeModel(collegeAddress: collegeName.text, state: widget.community.state, city: widget.community.city);
-                  firestore.collection('colleges').add(clg.toJson()).then((value) {
-                    isClicked = false;
-                    setState(() {});
-                  });
-                  Navigator.pop(context);
-                },
+            isClicked = true;
+            setState(() {});
+            await widget.community.reference.collection('groups').add({
+              'collegeName': collegeName.text,
+              'isGeneral': false,
+              'updatedAt': Timestamp.now(),
+            });
+            firestore.collection('colleges').add({
+              'collegeAddress': collegeName.text,
+              'state': widget.community['state'],
+              'city': widget.community['city'],
+            }).then((value) {
+              isClicked = false;
+              setState(() {});
+            });
+            Navigator.pop(context);
+          },
           label: 'Create',
         ),
       ),
