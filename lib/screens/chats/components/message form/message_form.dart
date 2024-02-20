@@ -539,7 +539,11 @@ class _MessageFormState extends State<MessageForm>
                   // );
                 } else {
                   await HapticFeedback.lightImpact();
-                  if (recorder.isRecording) {
+                  if(filesChoosen.isNotEmpty) {
+                    for(int i = 0; i <filesChoosen.length; i++) {
+                      onPost(filesChoosen[i].path!, fileType[i], filesChoosen[i].extension!);
+                    }
+                  } else if (recorder.isRecording) {
                     await stop().then(
                           (value) => Navigator.push(
                         context,
@@ -556,6 +560,10 @@ class _MessageFormState extends State<MessageForm>
                     );
                   } else {
                     await record();
+                    ctrl.clear();
+                    filesChoosen.clear();
+                    fileType.clear();
+                    setState(() {});
                     timer = Timer(const Duration(minutes: 1, seconds: 30),
                             () async {
                           await stop().then(
@@ -577,6 +585,8 @@ class _MessageFormState extends State<MessageForm>
                   }
                 }
                 ctrl.clear();
+                filesChoosen.clear();
+                fileType.clear();
                 if (widget.onCancel != null) {
                   widget.onCancel!();
                 }

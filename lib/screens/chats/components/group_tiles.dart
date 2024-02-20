@@ -143,7 +143,7 @@ class _GroupTileState extends State<GroupTile> {
                                   ? 'You: '
                                   : '') +
                                   (snapshot.data!['message'].isEmpty
-                                      ? 'Audio/video'
+                                      ? snapshot.data!['contentType']
                                       : snapshot.data!['message']),
                               style: GoogleFonts.poppins(
                                 fontWeight: FontWeight.w600,

@@ -106,6 +106,7 @@ class _GroupChatState extends State<GroupChat> {
                                 setState(() {});
                               },
                               child: SendMessageBlob(
+                                contentType: data[i]['message'].isEmpty? data[i]['contentType']:null,
                                 replyRef: data[i]['replyTo'],
                                 onCancel: () {
                                   replyData = null;
