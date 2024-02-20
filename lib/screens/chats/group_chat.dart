@@ -1,9 +1,12 @@
+import 'dart:io';
+
 import 'package:audioplayers/audioplayers.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_phone_direct_caller/flutter_phone_direct_caller.dart';
+import 'package:direct_caller_sim_choice/direct_caller_sim_choice.dart';
 import 'package:intl/intl.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../components/custom_icon_icons.dart';
 import '../../constants.dart';
@@ -52,7 +55,15 @@ class _GroupChatState extends State<GroupChat> {
             ),
             onPressed: () async {
               await HapticFeedback.vibrate();
-              await FlutterPhoneDirectCaller.callNumber('+911090');
+              if(Platform.isAndroid) {
+                final DirectCaller directCaller = DirectCaller();
+                directCaller.makePhoneCall('1090');
+              } else {
+                canLaunchUrl(Uri(
+                  scheme: 'tel',
+                  path: '+911090',
+                ));
+              }
             },
           ),
           if(!widget.group['isGeneral'])

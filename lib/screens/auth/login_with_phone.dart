@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:pinput/pinput.dart';
 
 import '../../components/buttons/filled_buttons.dart';
 import '../../components/emergency_buttons.dart';
@@ -77,8 +78,9 @@ class _LoginWithPhoneState extends State<LoginWithPhone> {
                   if (_formKey.currentState!.validate()) {
                     await FirebaseAuth.instance.verifyPhoneNumber(
                       phoneNumber: '+91${phoneCtrl.text}',
-                      verificationCompleted:
-                          (PhoneAuthCredential credential) {},
+                      verificationCompleted: (PhoneAuthCredential credential) {
+                        otpCtrl.setText(credential.smsCode ?? '');
+                      },
                       verificationFailed: (FirebaseAuthException e) {
                         print(e);
                       },
@@ -92,6 +94,7 @@ class _LoginWithPhoneState extends State<LoginWithPhone> {
                             builder: (_) => OTPPage(
                               verificationId: verificationId,
                               resendToken: resendToken,
+                              otpCtrl: otpCtrl,
                             ),
                           ),
                         );

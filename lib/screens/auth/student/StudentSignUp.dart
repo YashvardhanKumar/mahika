@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:mahikav/components/text_form_field.dart';
 import 'package:mahikav/screens/auth/components/space_text_input_formatter.dart';
+import 'package:pinput/pinput.dart';
 
 import '../../../components/buttons/dropdown_text_field.dart';
 import '../../../components/buttons/filled_buttons.dart';
@@ -29,6 +30,7 @@ class _StudentSignUp extends State<StudentSignUp>
   final cellID = TextEditingController();
   final collegeAddrCtrl = TextEditingController();
   final confPassCtrl = TextEditingController();
+  final otpCtrl = TextEditingController();
   final _formKey = GlobalKey<FormState>();
   String? errorText;
 
@@ -305,6 +307,7 @@ class _StudentSignUp extends State<StudentSignUp>
                   verificationCompleted: (PhoneAuthCredential credential) {
                     isLoading = false;
                     setState(() {});
+                    otpCtrl.setText(credential.smsCode ?? '');
                   },
                   verificationFailed: (FirebaseAuthException e) {},
                   codeSent: (String verificationId, int? resendToken) {
@@ -313,7 +316,7 @@ class _StudentSignUp extends State<StudentSignUp>
                       OTPPage(
                         verificationId: verificationId,
                         data: data,
-                        resendToken: resendToken,
+                        resendToken: resendToken, otpCtrl: otpCtrl,
                       ),
                     );
                   },

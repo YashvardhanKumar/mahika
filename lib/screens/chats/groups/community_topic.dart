@@ -71,7 +71,7 @@ class _CommunitiesTopicListState extends State<CommunitiesTopicList> {
 
                                 child: Padding(
                                   padding: const EdgeInsets.all(4.0),
-                                  child: Text("$notification",style: GoogleFonts.sourceSansPro(color: Colors.white),),
+                                  child: Text("$notification",style: GoogleFonts.sourceSans3(color: Colors.white),),
                                 ),
                               ),
                             ),

@@ -6,11 +6,12 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_phone_direct_caller/flutter_phone_direct_caller.dart';
+import 'package:direct_caller_sim_choice/direct_caller_sim_choice.dart';
 import 'package:flutter_sound/public/flutter_sound_recorder.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import 'custom_icon_icons.dart';
 import 'record_player.dart';
@@ -194,7 +195,16 @@ class _EmergencyButtonsState extends State<EmergencyButtons> {
           ),
           onPressed: () async {
             await HapticFeedback.vibrate();
-            await FlutterPhoneDirectCaller.callNumber('+911090');
+            if(Platform.isAndroid) {
+              final DirectCaller directCaller = DirectCaller();
+              directCaller.makePhoneCall('1090');
+            } else {
+              canLaunchUrl(Uri(
+                scheme: 'tel',
+                path: '+911090',
+              ));
+            }
+
           },
         ),
       ],

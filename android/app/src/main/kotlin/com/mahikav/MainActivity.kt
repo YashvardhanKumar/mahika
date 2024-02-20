@@ -1,4 +1,4 @@
-package com.example.mahikav
+package com.mahikav
 
 import io.flutter.embedding.android.FlutterActivity
 

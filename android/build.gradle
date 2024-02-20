@@ -1,22 +1,19 @@
-//buildscript {
-//    ext.kotlin_version = '1.8.22'
-//    repositories {
-//        google()
-//        mavenCentral()
-//    }
-//
-//    dependencies {
-//        classpath 'com.android.tools.build:gradle:7.3.1'
-//        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
-//        classpath 'com.google.gms:google-services:4.4.1'
-//        classpath 'com.google.firebase:firebase-crashlytics-gradle:2.9.9'
-//    }
-//}
-
 allprojects {
     repositories {
         google()
         mavenCentral()
+    }
+
+    subprojects {
+        afterEvaluate { project ->
+            if (project.hasProperty('android')) {
+                project.android {
+                    if (namespace == null) {
+                        namespace project.group
+                    }
+                }
+            }
+        }
     }
 }
 

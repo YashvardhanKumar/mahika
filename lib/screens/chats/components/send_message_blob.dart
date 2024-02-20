@@ -213,6 +213,7 @@ class _SendMessageBlobState extends State<SendMessageBlob> {
                                         url: widget.fileMessage!));
                                   },
                                   child: Stack(
+                                    alignment: Alignment.center,
                                     children: [
                                       Container(
                                         decoration: ShapeDecoration(

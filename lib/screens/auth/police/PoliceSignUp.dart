@@ -1,6 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:pinput/pinput.dart';
 
 import '../../../components/text_form_field.dart';
 
@@ -28,6 +29,7 @@ class _PoliceSignUp extends State<PoliceSignUp>
   final confPassCtrl = TextEditingController();
   final nameCtrl = TextEditingController();
   final phoneCtrl = TextEditingController();
+  final otpCtrl = TextEditingController();
 
   bool isLoading = false;
 
@@ -275,6 +277,7 @@ class _PoliceSignUp extends State<PoliceSignUp>
                   verificationCompleted: (PhoneAuthCredential credential) {
                     isLoading = false;
                     setState(() {});
+                    otpCtrl.setText(credential.smsCode ?? '');
                   },
                   verificationFailed: (FirebaseAuthException e) {
                     print(e);
@@ -298,7 +301,7 @@ class _PoliceSignUp extends State<PoliceSignUp>
                             'policeID': policeIdCtrl.text,
                             'post': policePostCtrl.text,
                             'isVerifiedUser': null,
-                          },
+                          }, otpCtrl: otpCtrl,
                         ),
                       ),
                     );

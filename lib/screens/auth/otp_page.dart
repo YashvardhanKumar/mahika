@@ -14,11 +14,12 @@ class OTPPage extends StatefulWidget {
     Key? key,
     required this.verificationId,
     this.data,
-    required this.resendToken,
+    required this.resendToken, required this.otpCtrl,
   }) : super(key: key);
   final String verificationId;
   final int? resendToken;
   final Map<String, dynamic>? data;
+  final TextEditingController otpCtrl;
 
   @override
   State<OTPPage> createState() => _OTPPageState();
@@ -27,7 +28,7 @@ class OTPPage extends StatefulWidget {
 class _OTPPageState extends State<OTPPage> {
   // final List<FocusNode> focusNode = [];
   // final List<TextEditingController> controllers = [];
-  final otpCtrl = TextEditingController();
+  // final otpCtrl = TextEditingController();
   final otpFocus = FocusNode();
   String? errorText;
   Timer? timer;
@@ -59,7 +60,7 @@ class _OTPPageState extends State<OTPPage> {
     //   // focusNode[i].dispose();
     //   // controllers[i].dispose();
     // }
-    otpCtrl.dispose();
+    widget.otpCtrl.dispose();
     super.dispose();
   }
 
@@ -81,10 +82,11 @@ class _OTPPageState extends State<OTPPage> {
                   fontSize: 28, fontWeight: FontWeight.w500),
               textAlign: TextAlign.center,
             ),
+            SizedBox(height: 20,),
             Pinput(
               length: 6,
               androidSmsAutofillMethod:
-                  AndroidSmsAutofillMethod.smsUserConsentApi,
+                  AndroidSmsAutofillMethod.none,
               defaultPinTheme: PinTheme(
                 textStyle: const TextStyle(
                   fontSize: 32,
@@ -94,7 +96,7 @@ class _OTPPageState extends State<OTPPage> {
                 decoration: BoxDecoration(
                   border: Border.fromBorderSide(
                     BorderSide(
-                      color: (otpCtrl.text.isNotEmpty)
+                      color: (widget.otpCtrl.text.isNotEmpty)
                           ? Colors.black
                           : const Color(0xffD8DADC),
                     ),
@@ -130,7 +132,7 @@ class _OTPPageState extends State<OTPPage> {
                   borderRadius: BorderRadius.circular(5),
                 ),
               ),
-              controller: otpCtrl,
+              controller: widget.otpCtrl,
               focusNode: otpFocus,
               keyboardAppearance: Brightness.light,
               validator: (pin) {
@@ -238,7 +240,7 @@ class _OTPPageState extends State<OTPPage> {
 
     PhoneAuthCredential credential = PhoneAuthProvider.credential(
       verificationId: widget.verificationId,
-      smsCode: otpCtrl.text,
+      smsCode: widget.otpCtrl.text,
     );
 
     // Sign the user in (or link) with the credential
