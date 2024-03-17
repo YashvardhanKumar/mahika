@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:pinput/pinput.dart';
 
@@ -14,12 +15,11 @@ class OTPPage extends StatefulWidget {
     Key? key,
     required this.verificationId,
     this.data,
-    required this.resendToken, required this.otpCtrl,
+    required this.resendToken,
   }) : super(key: key);
   final String verificationId;
   final int? resendToken;
   final Map<String, dynamic>? data;
-  final TextEditingController otpCtrl;
 
   @override
   State<OTPPage> createState() => _OTPPageState();
@@ -29,6 +29,7 @@ class _OTPPageState extends State<OTPPage> {
   // final List<FocusNode> focusNode = [];
   // final List<TextEditingController> controllers = [];
   // final otpCtrl = TextEditingController();
+  final TextEditingController otpCtrl = TextEditingController();
   final otpFocus = FocusNode();
   String? errorText;
   Timer? timer;
@@ -42,6 +43,9 @@ class _OTPPageState extends State<OTPPage> {
 
   @override
   void initState() {
+    Clipboard.getData('text/plain').then((value) {
+      return otpCtrl.text = value?.text ?? '';
+    });
     // focusNode[i].dispose();
     // for (int i = 0; i < 6; i++) {
     //   // focusNode.add(FocusNode());
@@ -60,7 +64,7 @@ class _OTPPageState extends State<OTPPage> {
     //   // focusNode[i].dispose();
     //   // controllers[i].dispose();
     // }
-    widget.otpCtrl.dispose();
+    otpCtrl.dispose();
     super.dispose();
   }
 
@@ -96,7 +100,7 @@ class _OTPPageState extends State<OTPPage> {
                 decoration: BoxDecoration(
                   border: Border.fromBorderSide(
                     BorderSide(
-                      color: (widget.otpCtrl.text.isNotEmpty)
+                      color: (otpCtrl.text.isNotEmpty)
                           ? Colors.black
                           : const Color(0xffD8DADC),
                     ),
@@ -132,7 +136,7 @@ class _OTPPageState extends State<OTPPage> {
                   borderRadius: BorderRadius.circular(5),
                 ),
               ),
-              controller: widget.otpCtrl,
+              controller: otpCtrl,
               focusNode: otpFocus,
               keyboardAppearance: Brightness.light,
               validator: (pin) {
@@ -240,7 +244,7 @@ class _OTPPageState extends State<OTPPage> {
 
     PhoneAuthCredential credential = PhoneAuthProvider.credential(
       verificationId: widget.verificationId,
-      smsCode: widget.otpCtrl.text,
+      smsCode: otpCtrl.text,
     );
 
     // Sign the user in (or link) with the credential

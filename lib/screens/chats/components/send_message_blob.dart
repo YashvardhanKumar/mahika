@@ -191,19 +191,24 @@ class _SendMessageBlobState extends State<SendMessageBlob> {
                                   audioPlayer: widget.audioPlayer,
                                 );
                               } else if (widget.contentType == 'image') {
-                                return Container(
-                                  decoration: ShapeDecoration(
-                                      shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(10),
-                                  )),
-                                  constraints: const BoxConstraints(
-                                    minHeight: 50,
-                                    maxHeight: 500,
-                                    minWidth: 50,
-                                  ),
-                                  child: Image.network(
-                                    widget.fileMessage!,
-                                    fit: BoxFit.cover,
+                                return GestureDetector(
+                                  onTap: () {
+
+                                  },
+                                  child: Container(
+                                    decoration: ShapeDecoration(
+                                        shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(10),
+                                    )),
+                                    constraints: const BoxConstraints(
+                                      minHeight: 50,
+                                      maxHeight: 500,
+                                      minWidth: 50,
+                                    ),
+                                    child: Image.network(
+                                      widget.fileMessage!,
+                                      fit: BoxFit.cover,
+                                    ),
                                   ),
                                 );
                               } else {
@@ -216,6 +221,7 @@ class _SendMessageBlobState extends State<SendMessageBlob> {
                                     alignment: Alignment.center,
                                     children: [
                                       Container(
+                                        clipBehavior: Clip.hardEdge,
                                         decoration: ShapeDecoration(
                                           shape: RoundedRectangleBorder(
                                             borderRadius:
@@ -232,7 +238,7 @@ class _SendMessageBlobState extends State<SendMessageBlob> {
                                                 VideoThumbnail.thumbnailData(
                                               video: widget.fileMessage!,
                                               imageFormat: ImageFormat.JPEG,
-                                              maxWidth: 128,
+                                              maxWidth: 500,
                                               // specify the width of the thumbnail, let the height auto-scaled to keep the source aspect ratio
                                               quality: 25,
                                             ),

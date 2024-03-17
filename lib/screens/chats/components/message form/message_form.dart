@@ -50,12 +50,13 @@ class _MessageFormState extends State<MessageForm>
   late Animation<double> animation;
   List<PlatformFile> filesChoosen = [];
   List<String> fileType = [];
+  UploadTask? task;
 
   bool expand = true;
 
   void fileIdentifier() {
     List<String> imageExt = ['jpg', 'jpeg', 'png', 'heic', 'webp'],
-        audioExt = ['wav', 'aac', 'mp3','m4a'],
+        audioExt = ['wav', 'aac', 'mp3', 'm4a'],
         videoExt = ['mp4', 'mkv', 'webm', 'wmv', 'm4v', 'h264', 'hevc'];
     fileType = [];
     for (var file in filesChoosen) {
@@ -139,10 +140,14 @@ class _MessageFormState extends State<MessageForm>
     File file = File(url_);
     String fileName = DateTime.now().toIso8601String();
     Reference firebaseStorageRef =
-    FirebaseStorage.instance.ref().child('$type/$fileName.$ext');
-    UploadTask uploadTask = firebaseStorageRef.putFile(
+        FirebaseStorage.instance.ref().child('$type/$fileName.$ext');
+    task = firebaseStorageRef.putFile(
         file, SettableMetadata(contentType: '$type/$ext'));
-    String url = await uploadTask.whenComplete(() {}).then((value) {
+    setState(() {});
+    String url = await task!.whenComplete(() {
+      task = null;
+      setState(() {});
+    }).then((value) {
       return value.ref.getDownloadURL();
     });
     // Position curPos = await _determinePosition();
@@ -315,102 +320,149 @@ class _MessageFormState extends State<MessageForm>
                           children: List.generate(filesChoosen.length, (index) {
                             final file = filesChoosen[index];
                             final filePut = File(file.path ?? '');
-                            return Stack(
-                              alignment: Alignment.topRight,
-                              children: [
-                                Padding(
-                                  padding: const EdgeInsets.all(8.0),
-                                  child: ClipRRect(
-                                    borderRadius: BorderRadius.circular(10),
-                                    clipBehavior: Clip.hardEdge,
-                                    child: Container(
-                                      height: 70,
-                                      width: 70,
-                                      alignment: Alignment.center,
-                                      color: kColorLight,
-                                      child: Builder(builder: (context) {
-                                        if (fileType[index] == 'image') {
-                                          return Image.file(filePut,
-                                              cacheHeight: 70, cacheWidth: 70);
-                                        } else if (fileType[index] == 'video') {
-                                          return FutureBuilder(
-                                              future:
-                                              VideoThumbnail.thumbnailData(
-                                                video: filePut.path,
-                                                imageFormat: ImageFormat.JPEG,
-                                                maxWidth: 128,
-                                                // specify the width of the thumbnail, let the height auto-scaled to keep the source aspect ratio
-                                                quality: 25,
-                                              ),
-                                              builder: (_, data) {
-                                                if (data.hasData &&
-                                                    data.data != null) {
-                                                  return Stack(
-                                                    alignment: Alignment.center,
-                                                    children: [
-                                                      Image.memory(
-                                                        data.data!,
-                                                        width: 70,
-                                                        height: 70,
-                                                        cacheWidth: 70,
-                                                        cacheHeight: 70,
-                                                      ),
-                                                      Material(
-                                                        borderRadius:
-                                                        BorderRadius.circular(
-                                                            10),
-                                                        color: Colors.white30,
-                                                        child: Padding(
-                                                          padding:
-                                                          EdgeInsets.all(5),
-                                                          child: Icon(
-                                                              CustomIcon.play),
+                            return StreamBuilder<TaskSnapshot?>(
+                                stream: task?.snapshotEvents,
+                                builder: (context, snapshot) {
+                                  return Stack(
+                                    alignment: Alignment.topRight,
+                                    children: [
+                                      Padding(
+                                        padding: const EdgeInsets.all(8.0),
+                                        child: ClipRRect(
+                                          borderRadius:
+                                              BorderRadius.circular(10),
+                                          clipBehavior: Clip.hardEdge,
+                                          child: Container(
+                                            height: 70,
+                                            width: 70,
+                                            alignment: Alignment.center,
+                                            color: kColorLight,
+                                            child: Stack(
+                                              alignment: Alignment.center,
+                                              children: [
+                                                Builder(builder: (context) {
+                                                  if (fileType[index] ==
+                                                      'image') {
+                                                    return Stack(
+                                                      children: [
+                                                        Image.file(
+                                                          filePut,
+                                                          // cacheHeight: 70,
+                                                          cacheWidth: 70,
                                                         ),
-                                                      ),
-                                                    ],
-                                                  );
-                                                }
-                                                return const Icon(
-                                                    CustomIcon.play);
-                                              });
-                                        } else if (fileType[index] == 'audio') {
-                                          return const Icon(
-                                              Icons.audiotrack_rounded);
-                                        } else {
-                                          return Column(
-                                            children: [
-                                              Icon(FontAwesomeIcons.file),
-                                              Text(
-                                                filesChoosen[index]
-                                                    .extension
-                                                    ?.toUpperCase() ??
-                                                    '',
-                                                style: TextStyle(fontSize: 12),
-                                              )
-                                            ],
-                                          );
-                                        }
-                                      }),
-                                    ),
-                                  ),
-                                ),
-                                Material(
-                                  shape: const CircleBorder(),
-                                  color: Colors.grey.shade100,
-                                  child: InkWell(
-                                    onTap: () {
-                                      filesChoosen.removeAt(index);
-                                      fileType.removeAt(index);
-                                      setState(() {});
-                                    },
-                                    child: const Icon(
-                                      Icons.close_rounded,
-                                      color: Colors.grey,
-                                    ),
-                                  ),
-                                )
-                              ],
-                            );
+                                                      ],
+                                                    );
+                                                  } else if (fileType[index] ==
+                                                      'video') {
+                                                    return FutureBuilder(
+                                                        future: VideoThumbnail
+                                                            .thumbnailData(
+                                                          video: filePut.path,
+                                                          imageFormat:
+                                                              ImageFormat.JPEG,
+                                                          maxWidth: 128,
+                                                          // specify the width of the thumbnail, let the height auto-scaled to keep the source aspect ratio
+                                                          quality: 25,
+                                                        ),
+                                                        builder: (_, data) {
+                                                          if (data.hasData &&
+                                                              data.data !=
+                                                                  null) {
+                                                            return Stack(
+                                                              alignment:
+                                                                  Alignment
+                                                                      .center,
+                                                              children: [
+                                                                Image.memory(
+                                                                  data.data!,
+                                                                  width: 70,
+                                                                  height: 70,
+                                                                  cacheWidth:
+                                                                      70,
+                                                                  cacheHeight:
+                                                                      70,
+                                                                ),
+                                                                if (!(snapshot
+                                                                            .data !=
+                                                                        null &&
+                                                                    index == 0))
+                                                                  Material(
+                                                                    borderRadius:
+                                                                        BorderRadius.circular(
+                                                                            10),
+                                                                    color: Colors
+                                                                        .white30,
+                                                                    child:
+                                                                        const Padding(
+                                                                      padding:
+                                                                          EdgeInsets.all(
+                                                                              5),
+                                                                      child: Icon(
+                                                                          CustomIcon
+                                                                              .play),
+                                                                    ),
+                                                                  ),
+                                                              ],
+                                                            );
+                                                          }
+                                                          return const Icon(
+                                                              CustomIcon.play);
+                                                        });
+                                                  } else if (fileType[index] ==
+                                                      'audio') {
+                                                    return const Icon(Icons
+                                                        .audiotrack_rounded);
+                                                  } else {
+                                                    return Column(
+                                                      children: [
+                                                        const Icon(
+                                                            FontAwesomeIcons
+                                                                .file),
+                                                        Text(
+                                                          filesChoosen[index]
+                                                                  .extension
+                                                                  ?.toUpperCase() ??
+                                                              '',
+                                                          style:
+                                                              const TextStyle(
+                                                                  fontSize: 12),
+                                                        )
+                                                      ],
+                                                    );
+                                                  }
+                                                }),
+                                                if (snapshot.data != null &&
+                                                    index == 0)
+                                                  CircularProgressIndicator(
+                                                    value: snapshot.data!
+                                                            .bytesTransferred /
+                                                        snapshot
+                                                            .data!.totalBytes,
+                                                    strokeCap: StrokeCap.round,
+                                                  )
+                                              ],
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                      Material(
+                                        shape: const CircleBorder(),
+                                        color: Colors.grey.shade100,
+                                        child: InkWell(
+                                          onTap: () {
+                                            filesChoosen.removeAt(index);
+                                            fileType.removeAt(index);
+                                            setState(() {});
+                                          },
+                                          child: const Icon(
+                                            Icons.close_rounded,
+                                            color: Colors.grey,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  );
+                                });
                           }),
                         ),
                       ),
@@ -452,36 +504,38 @@ class _MessageFormState extends State<MessageForm>
                             suffixIcon: (ctrl.text == '') ?  Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                IconButton(
-                                  icon: Icon(
-                                    Icons.audio_file_outlined,
-                                    size: 28,
-                                  ),
-                                  onPressed: () async {
-                                    final result =
-                                    await FilePicker.platform.pickFiles(
-                                      type: FileType.audio,
-                                      allowMultiple: true,
-                                      withReadStream: true,
-                                    );
-                                    if (result != null) {
-                                      filesChoosen.addAll(result.files);
-                                      fileIdentifier();
-                                      setState(() {});
-                                    }
-                                  },
-                                ),
-                                IconButton(
-                                  icon: const Icon(
-                                    CustomIcon.image_add,
-                                    size: 28,
-                                  ),
-                                  onPressed: () async {
-                                    final result =
-                                    await FilePicker.platform.pickFiles(
-                                      type: FileType.media,
-                                      allowMultiple: true,
-                                      withReadStream: true,
+                                      IconButton(
+                                        icon: const Icon(
+                                          Icons.audio_file_outlined,
+                                          size: 28,
+                                        ),
+                                        onPressed: () async {
+                                          final result = await FilePicker
+                                              .platform
+                                              .pickFiles(
+                                            type: FileType.audio,
+                                            allowMultiple: true,
+                                            withReadStream: true,
+                                          );
+                                          if (result != null) {
+                                            filesChoosen.addAll(result.files);
+                                            fileIdentifier();
+                                            setState(() {});
+                                          }
+                                        },
+                                      ),
+                                      IconButton(
+                                        icon: const Icon(
+                                          CustomIcon.image_add,
+                                          size: 28,
+                                        ),
+                                        onPressed: () async {
+                                          final result = await FilePicker
+                                              .platform
+                                              .pickFiles(
+                                            type: FileType.media,
+                                            allowMultiple: true,
+                                            withReadStream: true,
                                     );
                                     if (result != null) {
                                       filesChoosen.addAll(result.files);
@@ -529,6 +583,10 @@ class _MessageFormState extends State<MessageForm>
                     'replyTo': widget.replyTo?.reference,
                     'contentType': 'text'
                   });
+                  ctrl.clear();
+                  if (widget.onCancel != null) {
+                    widget.onCancel!();
+                  }
                   await widget.group.update({
                     'updatedAt': Timestamp.now(),
                   });
@@ -540,9 +598,17 @@ class _MessageFormState extends State<MessageForm>
                 } else {
                   await HapticFeedback.lightImpact();
                   if(filesChoosen.isNotEmpty) {
-                    for(int i = 0; i <filesChoosen.length; i++) {
-                      onPost(filesChoosen[i].path!, fileType[i], filesChoosen[i].extension!);
+                    for (int i = 0; i < filesChoosen.length; i++) {
+                      onPost(filesChoosen[i].path!, fileType[i],
+                          filesChoosen[i].extension!);
+                      filesChoosen.removeAt(0);
+                      fileType.removeAt(0);
+                      if (widget.onCancel != null) {
+                        widget.onCancel!();
+                      }
                     }
+                    filesChoosen.clear();
+                    fileType.clear();
                   } else if (recorder.isRecording) {
                     await stop().then(
                           (value) => Navigator.push(
@@ -610,21 +676,21 @@ class _MessageFormState extends State<MessageForm>
                       ),
                     ),
                   ),
-                  child: (ctrl.text.isEmpty)
+                  child: (ctrl.text.isEmpty && filesChoosen.isEmpty)
                       ? Icon(
-                    recorder.isRecording
-                        ? Icons.stop_rounded
-                        : CustomIcon.mic,
-                    color: Colors.white,
-                    size: 25,
-                    key: const ValueKey('mic'),
-                  )
+                          recorder.isRecording
+                              ? Icons.stop_rounded
+                              : CustomIcon.mic,
+                          color: Colors.white,
+                          size: 25,
+                          key: const ValueKey('mic'),
+                        )
                       : const Icon(
-                    Icons.send_rounded,
-                    color: Colors.white,
-                    size: 25,
-                    key: ValueKey('send'),
-                  ),
+                          Icons.send_rounded,
+                          color: Colors.white,
+                          size: 25,
+                          key: ValueKey('send'),
+                        ),
                 ),
               ),
             ),

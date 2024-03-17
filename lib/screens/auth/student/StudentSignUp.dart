@@ -272,7 +272,7 @@ class _StudentSignUp extends State<StudentSignUp>
                       isLoading = false;
                       setState(() {});
                     });
-                    Get.offAll(HomePage());
+                    Get.offAll(const HomePage());
                     // TODO: Add Navigator to HomePage
                   });
                 } on FirebaseAuthException catch (e) {
@@ -306,17 +306,26 @@ class _StudentSignUp extends State<StudentSignUp>
                   phoneNumber: '+91${phoneCtrl.text}',
                   verificationCompleted: (PhoneAuthCredential credential) {
                     isLoading = false;
+                    otpCtrl.text = credential.smsCode ?? '';
+                    if (credential.smsCode != null) {
+                      Clipboard.setData(
+                          ClipboardData(text: credential.smsCode!));
+                    }
                     setState(() {});
-                    otpCtrl.setText(credential.smsCode ?? '');
                   },
                   verificationFailed: (FirebaseAuthException e) {},
                   codeSent: (String verificationId, int? resendToken) {
+
                     setState(() {});
-                    Get.to(
-                      OTPPage(
-                        verificationId: verificationId,
-                        data: data,
-                        resendToken: resendToken, otpCtrl: otpCtrl,
+                    Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => OTPPage(
+                          verificationId: verificationId,
+                          data: data,
+                          resendToken: resendToken,
+                          // otpCtrl: otpCtrl,
+                        ),
                       ),
                     );
                   },

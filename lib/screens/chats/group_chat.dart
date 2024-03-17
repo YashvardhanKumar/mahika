@@ -2,10 +2,11 @@ import 'dart:io';
 
 import 'package:audioplayers/audioplayers.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:direct_caller_sim_choice/direct_caller_sim_choice.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:direct_caller_sim_choice/direct_caller_sim_choice.dart';
 import 'package:intl/intl.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../components/custom_icon_icons.dart';
@@ -48,24 +49,34 @@ class _GroupChatState extends State<GroupChat> {
             ? "General"
             : widget.group['collegeName'])),
         actions: [
-          IconButton(
-            icon: const Icon(
-              Icons.call_rounded,
-              size: 32,
+          if (widget.user['category'] == 'Member')
+            IconButton(
+              icon: const Icon(
+                Icons.call_rounded,
+                size: 32,
+              ),
+              onPressed: () async {
+                await HapticFeedback.vibrate();
+                if (Platform.isAndroid) {
+                  PermissionStatus? perm;
+                  if (!(await Permission.phone.isGranted)) {
+                    perm = await Permission.phone.request();
+
+                    if (perm.isDenied) {
+                      return;
+                    }
+                    // } else {
+                    final DirectCaller directCaller = DirectCaller();
+                    directCaller.makePhoneCall('1090');
+                  }
+                } else {
+                  canLaunchUrl(Uri(
+                    scheme: 'tel',
+                    path: '+911090',
+                  ));
+                }
+              },
             ),
-            onPressed: () async {
-              await HapticFeedback.vibrate();
-              if(Platform.isAndroid) {
-                final DirectCaller directCaller = DirectCaller();
-                directCaller.makePhoneCall('1090');
-              } else {
-                canLaunchUrl(Uri(
-                  scheme: 'tel',
-                  path: '+911090',
-                ));
-              }
-            },
-          ),
           if(!widget.group['isGeneral'])
             IconButton(
               icon: const Icon(
@@ -97,7 +108,7 @@ class _GroupChatState extends State<GroupChat> {
               List<Widget> list = [];
               if (data.isNotEmpty) {
                 final today = DateTime.now().day;
-                DateTime day = data[0]['timeSent'].toDate();
+                DateTime day = data[0]['timeSent'].toDate().toLocal();
                 int prevDay = 0;
 
                 for (int i = 0; i < data.length; i++) {
@@ -128,24 +139,24 @@ class _GroupChatState extends State<GroupChat> {
                                     ? data[i]['fileMessage']
                                     : null,
                                 message: data[i]['message'],
-                                time: data[i]['timeSent'].toDate(),
+                                time: day,
                                 isFirst: (i < data.length - 1 &&
-                                    (data[i + 1]['sentBy'].id !=
-                                        data[i]['sentBy'].id ||
-                                        data[i]['timeSent'].toDate().day >
-                                            data[i + 1]['timeSent']
-                                                .toDate()
-                                                .day)) ||
+                                        (data[i + 1]['sentBy'].id !=
+                                                data[i]['sentBy'].id ||
+                                            day.day >
+                                                data[i + 1]['timeSent']
+                                                    .toDate()
+                                                    .toLocal()
+                                                    .day)) ||
                                     i == data.length - 1,
                                 isLast: (i > 0 &&
-                                    (data[i]['sentBy'].id !=
-                                        data[i - 1]['sentBy'].id ||
-                                        data[i - 1]['timeSent']
-                                            .toDate()
-                                            .day >
-                                            data[i]['timeSent']
-                                                .toDate()
-                                                .day)) ||
+                                        (data[i]['sentBy'].id !=
+                                                data[i - 1]['sentBy'].id ||
+                                            data[i - 1]['timeSent']
+                                                    .toDate()
+                                                    .toLocal()
+                                                    .day >
+                                                day.day)) ||
                                     i == 0,
                                 isRecieved: !isCur,
                                 name: isCur ? 'You' : person.data?['name'],
@@ -158,34 +169,32 @@ class _GroupChatState extends State<GroupChat> {
                           return Container();
                         }),
                   );
-                  int dayByNow = prevDay = -(data[i]['timeSent'] as Timestamp)
-                      .toDate()
-                      .difference(DateTime.now())
-                      .inDays;
+                  int dayByNow = prevDay =
+                      -day.difference(DateTime.now().toLocal()).inDays;
                   if (i < data.length - 1) {
                     prevDay = -(data[i + 1]['timeSent'] as Timestamp)
                         .toDate()
+                        .toLocal()
                         .difference(day)
                         .inDays;
-                    int day_ = (data[i]['timeSent'] as Timestamp)
-                        .toDate()
-                        .difference(
-                        (data[i + 1]['timeSent'] as Timestamp).toDate())
+                    int day_ = day
+                        .difference((data[i + 1]['timeSent'] as Timestamp)
+                            .toDate()
+                            .toLocal())
                         .inDays;
                     if (day_ != 0) {
                       String text = (dayByNow == 0)
                           ? 'Today'
                           : (dayByNow == 1)
-                          ? 'Yesterday'
-                          : DateFormat("dd/MM/yyyy")
-                          .format(data[i]['timeSent'].toDate());
+                              ? 'Yesterday'
+                              : DateFormat("dd/MM/yyyy").format(day);
                       list.add(
                         Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             Padding(
                               padding:
-                              const EdgeInsets.symmetric(vertical: 10.0),
+                                  const EdgeInsets.symmetric(vertical: 10.0),
                               child: Material(
                                 shape: const StadiumBorder(),
                                 color: Colors.grey.shade200,
@@ -203,16 +212,20 @@ class _GroupChatState extends State<GroupChat> {
                         ),
                       );
                     }
-                    day = (data[i + 1]['timeSent'] as Timestamp).toDate();
+                    day = (data[i + 1]['timeSent'] as Timestamp)
+                        .toDate()
+                        .toLocal();
                   }
                 }
-                prevDay = -day.difference(DateTime.now()).inHours;
+                prevDay = -day.difference(DateTime.now().toLocal()).inHours;
                 String text = (prevDay >= 0 && prevDay < 24)
                     ? 'Today'
                     : (prevDay >= 24 && prevDay < 48)
-                    ? 'Yesterday'
-                    : DateFormat("dd/MM/yyyy")
-                    .format(data[data.length - 1]['timeSent'].toDate());
+                        ? 'Yesterday'
+                        : DateFormat("dd/MM/yyyy").format(data[data.length - 1]
+                                ['timeSent']
+                            .toDate()
+                            .toLocal());
                 list.add(
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,

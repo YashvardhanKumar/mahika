@@ -4,7 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:mahikav/components/buttons/filled_buttons.dart';
-import 'package:mahikav/screens/home/first_page.dart';
+import 'package:mahikav/screens/auth/login_signup.dart';
+import 'package:mahikav/screens/landing/first_page.dart';
 import 'package:mahikav/screens/home/home_page.dart';
 
 class PushNotification {
@@ -38,14 +39,14 @@ class _LogoPageState extends State<LogoPage> with TickerProviderStateMixin {
     super.initState();
     logoAnimationController = AnimationController(
       vsync: this,
-      duration: const Duration(seconds: 1, milliseconds: 500),
+      duration: const Duration(milliseconds: 800),
     );
     textAnimationController = AnimationController(
-        vsync: this, duration: const Duration(milliseconds: 700));
+        vsync: this, duration: const Duration(milliseconds: 800));
     Animation<double> curve = CurvedAnimation(
-        parent: logoAnimationController, curve: Curves.bounceOut);
+        parent: logoAnimationController, curve: Curves.easeOut);
     textAnimation =
-        Tween<double>(begin: -300, end: 0).animate(textAnimationController)
+        Tween<double>(begin: 200, end: 0).animate(curve)
           ..addListener(() {
             setState(() {});
           })
@@ -257,7 +258,7 @@ class _IntroPageState extends State<IntroPage> {
                               Navigator.pushReplacement(
                                 context,
                                 MaterialPageRoute(
-                                    builder: (_) => const FirstPage()),
+                                    builder: (_) => const LoginSignUp()),
                               );
                             },
                             label: 'Skip')),
@@ -277,7 +278,7 @@ class _IntroPageState extends State<IntroPage> {
                             Navigator.pushReplacement(
                               context,
                               MaterialPageRoute(
-                                  builder: (_) => const FirstPage()),
+                                  builder: (_) => const LoginSignUp()),
                             );
                           }
                           setState(() {});

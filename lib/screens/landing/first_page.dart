@@ -3,6 +3,8 @@ import 'package:mahikav/components/emergency_buttons.dart';
 
 import '../../components/buttons/filled_buttons.dart';
 import '../auth/login_signup.dart';
+import '../auth/police/PoliceSignUp.dart';
+import '../auth/student/StudentSignUp.dart';
 
 class FirstPage extends StatefulWidget {
   const FirstPage({Key? key}) : super(key: key);
@@ -128,17 +130,25 @@ class _FirstPageState extends State<FirstPage> {
       bottomNavigationBar: Padding(
         padding: EdgeInsets.all(10),
         child:
-        ((isPolice != null && isPolice!) || (isMember != null && isMember!))
+        ((isPolice != null) || (isMember != null))
             ? CustomFilledButton(
           onPressed: () {
             Navigator.push(
               context,
               MaterialPageRoute(
-                builder: (_) => LoginSignUp(
-                  isPolice: isPolice!,
-                ),
+                builder: (context) => (isPolice!)
+                    ? const PoliceSignUp()
+                    : const StudentSignUp(),
               ),
             );
+            // Navigator.push(
+            //   context,
+            //   MaterialPageRoute(
+            //     builder: (_) => LoginSignUp(
+            //       isPolice: isPolice!,
+            //     ),
+            //   ),
+            // );
           },
           label: 'Continue',
         )

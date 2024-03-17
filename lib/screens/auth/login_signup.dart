@@ -2,6 +2,8 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:mahikav/apis/auth_api.dart';
+import 'package:mahikav/screens/landing/first_page.dart';
+import 'package:mahikav/screens/landing/intro_page.dart';
 
 import '../../components/buttons/filled_buttons.dart';
 import '../../components/emergency_buttons.dart';
@@ -13,8 +15,8 @@ import 'police/PoliceSignUp.dart';
 import 'student/StudentSignUp.dart';
 
 class LoginSignUp extends StatefulWidget {
-  const LoginSignUp({Key? key, required this.isPolice}) : super(key: key);
-  final bool isPolice;
+  const LoginSignUp({Key? key}) : super(key: key);
+  // final bool isPolice;
 
   @override
   State<LoginSignUp> createState() => _LoginSignUpState();
@@ -30,7 +32,7 @@ class _LoginSignUpState extends State<LoginSignUp> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      floatingActionButton: EmergencyButtons(),
+      floatingActionButton: const EmergencyButtons(),
       appBar: AppBar(),
       body: SafeArea(
         child: ListView(
@@ -46,6 +48,7 @@ class _LoginSignUpState extends State<LoginSignUp> {
                       label: 'Email ID',
                       controller: emailCtrl,
                       hint: 'abc@example.com',
+                      keyboardType: TextInputType.emailAddress,
                       validator: (val) {
                         if (val == null || val.isEmpty) {
                           return 'Field is Required';
@@ -61,6 +64,7 @@ class _LoginSignUpState extends State<LoginSignUp> {
                       label: 'Password',
                       controller: passCtrl,
                       isPassword: true,
+                      keyboardType: TextInputType.visiblePassword,
                       validator: (val) {
                         if (val == null || val.isEmpty) {
                           return 'Field is Required';
@@ -75,6 +79,7 @@ class _LoginSignUpState extends State<LoginSignUp> {
                     CustomFilledButton(
                       onPressed: () async {
                         if (_formKey.currentState!.validate()) {
+                          errorText = null;
                           isClicked = true;
                           setState(() {});
                           AuthAPI.loginWithEmail(emailCtrl.text, passCtrl.text)
@@ -84,7 +89,7 @@ class _LoginSignUpState extends State<LoginSignUp> {
                               Navigator.pushAndRemoveUntil(
                                 context,
                                 MaterialPageRoute(
-                                  builder: (context) => HomePage(),
+                                  builder: (context) => const HomePage(),
                                 ),
                                 (_) => false,
                               );
@@ -136,9 +141,7 @@ class _LoginSignUpState extends State<LoginSignUp> {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => (widget.isPolice)
-                                ? const PoliceSignUp()
-                                : const StudentSignUp(),
+                            builder: (context) => const FirstPage(),
                           ),
                         );
                       },

@@ -1,6 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:mahikav/admin%20functions/see_user_list_to_verify.dart';
 import 'package:mahikav/screens/auth/pending_verification.dart';
 
 import '../../admin functions/add_place_admin_func.dart';
@@ -33,6 +35,27 @@ class _HomePageState extends State<HomePage> {
               appBar: AppBar(
                 title: const Text('Communities'),
                 actions: [
+                  if (userData.data!['category'] == 'Admin')
+                    StreamBuilder<QuerySnapshot>(
+                        stream: firestore
+                            .collection('users')
+                            .where("isVerifiedUser", isNull: true)
+                            .snapshots(),
+                        builder: (context, snapshot) {
+                          return FilledButton.tonalIcon(
+                            onPressed: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => UserListToVerify(),
+                                ),
+                              );
+                            },
+                            icon: Icon(CupertinoIcons.person),
+                            label: Text(
+                                'New Users (${snapshot.data?.size ?? ''})'),
+                          );
+                        }),
                   IconButton(
                       onPressed: () {}, icon: const Icon(Icons.search_rounded))
                 ],

@@ -77,9 +77,13 @@ class _LoginWithPhoneState extends State<LoginWithPhone> {
                   setState(() {});
                   if (_formKey.currentState!.validate()) {
                     await FirebaseAuth.instance.verifyPhoneNumber(
-                      phoneNumber: '+91${phoneCtrl.text}',
+                      phoneNumber: '+91${phoneCtrl.text.replaceAll(' ', '')}',
                       verificationCompleted: (PhoneAuthCredential credential) {
-                        otpCtrl.setText(credential.smsCode ?? '');
+                        otpCtrl.text = credential.smsCode ?? '';
+                        if(credential.smsCode != null) {
+                          Clipboard.setData(ClipboardData(text: credential.smsCode!));
+                        }
+                        setState(() {});
                       },
                       verificationFailed: (FirebaseAuthException e) {
                         print(e);
@@ -94,7 +98,7 @@ class _LoginWithPhoneState extends State<LoginWithPhone> {
                             builder: (_) => OTPPage(
                               verificationId: verificationId,
                               resendToken: resendToken,
-                              otpCtrl: otpCtrl,
+                              // otpCtrl: otpCtrl,
                             ),
                           ),
                         );

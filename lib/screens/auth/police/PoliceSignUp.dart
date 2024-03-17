@@ -276,12 +276,14 @@ class _PoliceSignUp extends State<PoliceSignUp>
                   phoneNumber: '+91${phoneCtrl.text}',
                   verificationCompleted: (PhoneAuthCredential credential) {
                     isLoading = false;
+                    otpCtrl.text = credential.smsCode ?? '';
+                    if (credential.smsCode != null) {
+                      Clipboard.setData(
+                          ClipboardData(text: credential.smsCode!));
+                    }
                     setState(() {});
-                    otpCtrl.setText(credential.smsCode ?? '');
                   },
-                  verificationFailed: (FirebaseAuthException e) {
-                    print(e);
-                  },
+                  verificationFailed: (FirebaseAuthException e) {},
                   codeSent: (String verificationId, int? resendToken) {
                     setState(() {});
                     Navigator.push(
@@ -301,7 +303,8 @@ class _PoliceSignUp extends State<PoliceSignUp>
                             'policeID': policeIdCtrl.text,
                             'post': policePostCtrl.text,
                             'isVerifiedUser': null,
-                          }, otpCtrl: otpCtrl,
+                          },
+                          // otpCtrl: otpCtrl,
                         ),
                       ),
                     );

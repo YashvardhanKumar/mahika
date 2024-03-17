@@ -2,11 +2,11 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:direct_caller_sim_choice/direct_caller_sim_choice.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:direct_caller_sim_choice/direct_caller_sim_choice.dart';
 import 'package:flutter_sound/public/flutter_sound_recorder.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
@@ -27,13 +27,18 @@ class _EmergencyButtonsState extends State<EmergencyButtons> {
   final recorder = FlutterSoundRecorder();
   Timer? timer;
   bool isRecorderReady = false;
+  bool isStart = false;
 
   Future record() async {
+    isStart = true;
+    setState(() {});
     await recorder.startRecorder(toFile: 'audio');
   }
 
   Future<String?> stop() async {
     timer?.cancel();
+    isStart = false;
+    setState(() {});
     return await recorder.stopRecorder();
   }
 
@@ -117,6 +122,7 @@ class _EmergencyButtonsState extends State<EmergencyButtons> {
       'audio': url,
       'address': address,
       'isCreated': DateTime.now().toUtc(),
+      'isSeen': false,
     });
     Navigator.pop(context);
   }
@@ -125,7 +131,6 @@ class _EmergencyButtonsState extends State<EmergencyButtons> {
   void initState() {
     // TODO: implement initState
     super.initState();
-
     initRecorder();
   }
 
@@ -144,7 +149,7 @@ class _EmergencyButtonsState extends State<EmergencyButtons> {
         FloatingActionButton(
           backgroundColor: Colors.red.shade900,
           child: Icon(
-            recorder.isRecording ? Icons.stop_rounded : CustomIcon.mic,
+            isStart ? Icons.stop_rounded : CustomIcon.mic,
             color: Colors.white,
           ),
           onPressed: () async {
@@ -195,16 +200,25 @@ class _EmergencyButtonsState extends State<EmergencyButtons> {
           ),
           onPressed: () async {
             await HapticFeedback.vibrate();
-            if(Platform.isAndroid) {
-              final DirectCaller directCaller = DirectCaller();
-              directCaller.makePhoneCall('1090');
+
+            if (Platform.isAndroid) {
+              PermissionStatus? perm;
+              if (!(await Permission.phone.isGranted)) {
+                perm = await Permission.phone.request();
+
+                if (perm.isDenied) {
+                  return;
+                }
+                // } else {
+                final DirectCaller directCaller = DirectCaller();
+                directCaller.makePhoneCall('1090');
+              }
             } else {
               canLaunchUrl(Uri(
                 scheme: 'tel',
                 path: '+911090',
               ));
             }
-
           },
         ),
       ],
