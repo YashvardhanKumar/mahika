@@ -44,3 +44,6 @@ app.*.map.json
 /android/app/release
 
 upload-keystore-mahika.jks
+
+upload-keystore.jks
+upload_certificate.pem
