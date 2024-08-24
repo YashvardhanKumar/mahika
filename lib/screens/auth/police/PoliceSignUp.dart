@@ -1,6 +1,8 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:geocoding/geocoding.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:pinput/pinput.dart';
 
 import '../../../components/text_form_field.dart';
@@ -36,7 +38,44 @@ class _PoliceSignUp extends State<PoliceSignUp>
   final _formKey = GlobalKey<FormState>();
   late final tabCtrl = TabController(length: 2, vsync: this);
   String? errorText, postError;
+  Placemark? location;
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    _determinePosition().then((e) {
+      setState(() {
+        location = e;
+      });
+    });
+  }
+  Future<Placemark> _determinePosition() async {
+    bool serviceEnabled;
+    LocationPermission permission;
 
+    serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    if (!serviceEnabled) {
+      return Future.error('Location services are disabled.');
+    }
+    permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
+      if (permission == LocationPermission.denied) {
+        return Future.error('Location permissions are denied');
+      }
+    }
+
+    if (permission == LocationPermission.deniedForever) {
+      // Permissions are denied forever, handle appropriately.
+      return Future.error(
+          'Location permissions are permanently denied, we cannot request permissions.');
+    }
+    final curLoc = await Geolocator.getCurrentPosition();
+    List<Placemark> placemarks =
+    await placemarkFromCoordinates(curLoc.latitude, curLoc.longitude);
+    print(placemarks.first);
+    return placemarks.first;
+  }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -208,6 +247,7 @@ class _PoliceSignUp extends State<PoliceSignUp>
                 setState(() {});
                 return;
               }
+              if(location == null) return;
               postError = null;
               isLoading = true;
               setState(() {});
@@ -229,8 +269,8 @@ class _PoliceSignUp extends State<PoliceSignUp>
                       'phoneNo': phoneCtrl.text,
                       'category': 'Police',
                       'IDProof': idProofCtrl.text,
-                      'city': 'Gwalior',
-                      'state': 'Madhya Pradesh',
+                      'city': location!.locality,
+                      'state': location!.administrativeArea,
                       'policeID': policeIdCtrl.text,
                       'post': policePostCtrl.text,
                       'isVerifiedUser': null,

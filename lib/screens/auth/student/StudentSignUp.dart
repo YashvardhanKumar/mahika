@@ -2,6 +2,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:geocoding/geocoding.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
 import 'package:mahikav/components/text_form_field.dart';
 import 'package:mahikav/screens/auth/components/space_text_input_formatter.dart';
@@ -36,8 +38,46 @@ class _StudentSignUp extends State<StudentSignUp>
 
   String? postError;
   bool isLoading = false;
+  Placemark? location;
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    _determinePosition().then((e) {
+      setState(() {
+        location = e;
+      });
+    });
+  }
 
   late final tabCtrl = TabController(length: 2, vsync: this);
+  Future<Placemark> _determinePosition() async {
+    bool serviceEnabled;
+    LocationPermission permission;
+
+    serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    if (!serviceEnabled) {
+      return Future.error('Location services are disabled.');
+    }
+    permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
+      if (permission == LocationPermission.denied) {
+        return Future.error('Location permissions are denied');
+      }
+    }
+
+    if (permission == LocationPermission.deniedForever) {
+      // Permissions are denied forever, handle appropriately.
+      return Future.error(
+          'Location permissions are permanently denied, we cannot request permissions.');
+    }
+    final curLoc = await Geolocator.getCurrentPosition();
+    List<Placemark> placemarks =
+        await placemarkFromCoordinates(curLoc.latitude, curLoc.longitude);
+    print(placemarks.first);
+    return placemarks.first;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -114,7 +154,7 @@ class _StudentSignUp extends State<StudentSignUp>
                         CustomTextFormField(
                           label: 'Phone No.',
                           controller: phoneCtrl,
-                          suffixText: '+91 | ',
+                          prefixText: '+91 ',
                           hint: '00000 00000',
                           inputFormatters: [
                             FilteringTextInputFormatter.digitsOnly,
@@ -143,25 +183,29 @@ class _StudentSignUp extends State<StudentSignUp>
                           },
                         ),
                         const SizedBox(height: 10),
-                        StreamBuilder<QuerySnapshot>(
-                            stream: firestore
-                                .collection('colleges')
-                                .orderBy('collegeAddress')
-                                .snapshots(),
-                            builder: (context, snapshot) {
-                              return CustomDropDownField(
-                                label: 'College Address',
-                                controller: collegeAddrCtrl,
-                                listItems: snapshot.hasData
-                                    ? List.generate(
-                                        snapshot.data!.size,
-                                        (i) => snapshot.data!.docs[i]
-                                            ['collegeAddress'],
-                                      )
-                                    : [],
-                                errorText: postError,
-                              );
-                            }),
+                        if (location != null)
+                          StreamBuilder<QuerySnapshot>(
+                              stream: firestore
+                                  .collection('colleges')
+                                  .where("state",
+                                      isEqualTo: location!.administrativeArea)
+                                  .where("city", isEqualTo: location!.locality)
+                                  .orderBy('collegeAddress')
+                                  .snapshots(),
+                              builder: (context, snapshot) {
+                                return CustomDropDownField(
+                                  label: 'College Address',
+                                  controller: collegeAddrCtrl,
+                                  listItems: snapshot.hasData
+                                      ? List.generate(
+                                          snapshot.data!.size,
+                                          (i) => snapshot.data!.docs[i]
+                                              ['collegeAddress'],
+                                        )
+                                      : [],
+                                  errorText: postError,
+                                );
+                              }),
                         CustomTextFormField(
                           label: 'Name',
                           controller: nameCtrl,
@@ -241,14 +285,15 @@ class _StudentSignUp extends State<StudentSignUp>
                 setState(() {});
                 return;
               }
+              if (location == null) return;
               Map<String, dynamic> data = {
                 'name': nameCtrl.text,
                 'email': emailCtrl.text,
                 'phoneNo': phoneCtrl.text,
                 'category': 'Member',
                 'IDProof': idProofCtrl.text,
-                'city': 'Gwalior',
-                'state': 'Madhya Pradesh',
+                'city': location!.locality,
+                'state': location!.administrativeArea,
                 'studentID': cellID.text,
                 'collegeAddress': collegeAddrCtrl.text,
                 'isVerifiedUser': null,
@@ -315,7 +360,6 @@ class _StudentSignUp extends State<StudentSignUp>
                   },
                   verificationFailed: (FirebaseAuthException e) {},
                   codeSent: (String verificationId, int? resendToken) {
-
                     setState(() {});
                     Navigator.pushReplacement(
                       context,

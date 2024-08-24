@@ -79,9 +79,9 @@ class _LoginWithPhoneState extends State<LoginWithPhone> {
                     await FirebaseAuth.instance.verifyPhoneNumber(
                       phoneNumber: '+91${phoneCtrl.text.replaceAll(' ', '')}',
                       verificationCompleted: (PhoneAuthCredential credential) {
-                        otpCtrl.text = credential.smsCode ?? '';
                         if(credential.smsCode != null) {
                           Clipboard.setData(ClipboardData(text: credential.smsCode!));
+                          otpCtrl.setText(credential.smsCode ?? "");
                         }
                         setState(() {});
                       },

@@ -13,11 +13,11 @@ class CustomTextFormField extends StatefulWidget {
     this.keyboardType,
     this.suffix,
     this.onTap,
-    this.enabled = true, this.inputFormatters, this.onChange, this.suffixText,
+    this.enabled = true, this.inputFormatters, this.onChange, this.prefixText,
   }) : super(key: key);
   final Widget? suffix;
   final String label;
-  final String? hint,suffixText;
+  final String? hint,prefixText;
   final bool isPassword;
   final TextEditingController controller;
   final String? Function(String?)? validator;
@@ -56,12 +56,14 @@ class _CustomTextFormFieldState extends State<CustomTextFormField> {
           validator: widget.validator,
           inputFormatters: widget.inputFormatters,
           onChanged: widget.onChange,
+          style: TextStyle(color: Colors.black),
           decoration: InputDecoration(
             fillColor: Colors.white,
             filled: true,
             enabled: widget.enabled,
             hintText: widget.hint,
-            suffixText: widget.suffixText,
+
+            prefix: Text(widget.prefixText ?? "", style: TextStyle(color: Colors.black),),
             hintStyle: GoogleFonts.poppins(
               fontWeight: FontWeight.w600,
               color: widget.enabled ? Colors.grey.shade400 : Color(0xffD8DADC),

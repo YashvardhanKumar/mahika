@@ -4,16 +4,19 @@ import 'package:firebase_app_check/firebase_app_check.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
+import 'package:get_storage/get_storage.dart';
+import 'package:workmanager/workmanager.dart';
 
 import 'firebase_options.dart';
-import 'screens/home/home_page.dart';
 import 'screens/landing/intro_page.dart';
-
+final storage  =GetStorage();
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  GetStorage.init();
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
+
   if(!kDebugMode) {
     await FirebaseAppCheck.instance.activate(
       androidProvider: AndroidProvider.playIntegrity,

@@ -37,12 +37,12 @@ class _RecordPlayerLocalState extends State<RecordPlayerLocal> {
     // PermissionStatus status = await Permission.storage.request();
     // PermissionStatus status1 = await Permission.accessMediaLocation.request();
     // PermissionStatus status = await Permission.audio.request();
-    var status = await Permission.storage.status;
+    var status = await Permission.storage.request();
     await Permission.audio.request();
     Directory _directory = Directory("");
     if (!status.isGranted) {
       // If not we will ask for permission first
-      await Permission.storage.request();
+      status = await Permission.storage.request();
       _directory = Directory(directoryPath);
 
       // await Permission.manageExternalStorage.request();

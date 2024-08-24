@@ -2,6 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:get_storage/get_storage.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:mahikav/components/buttons/filled_buttons.dart';
 import 'package:mahikav/screens/auth/login_signup.dart';
@@ -17,7 +18,7 @@ class PushNotification {
   String? title;
   String? body;
 }
-
+final storage = GetStorage();
 class LogoPage extends StatefulWidget {
   const LogoPage({Key? key}) : super(key: key);
 
@@ -72,7 +73,7 @@ class _LogoPageState extends State<LogoPage> with TickerProviderStateMixin {
 
   initPage() {
     FirebaseAuth.instance.authStateChanges().listen((event) {
-      Get.off((event != null) ? HomePage() : const IntroPage());
+      Get.off((event != null) ? const HomePage() : storage.read("introDone") == null ? const IntroPage() : const LoginSignUp());
     });
   }
 
@@ -136,8 +137,8 @@ class _IntroPageState extends State<IntroPage> {
         'person. There is a common group which connects all the woman community '
         'of that area. Police has access to all the communities and common group',
     'If you face any kind of abuse or harassment, just tap on the call button or '
-        'record button, or simply hit VOLUME UP button or VOLUME DOWN button '
-        'twice to record when its emergency. Make sure to add it to home screen '
+        'record button, or simply hit VOLUME UP button and VOLUME DOWN button '
+        'to record when its emergency. Make sure to add it to home screen '
         'to launch it quickly by sliding the icon. Voice message will automatically '
         'gets recorded and saved to the phone, after 30 seconds it will send automatically '
         'to the police along-with location and name of the person, and they '
@@ -254,7 +255,8 @@ class _IntroPageState extends State<IntroPage> {
                   children: [
                     Expanded(
                         child: CustomOutlineButton(
-                            onPressed: () {
+                            onPressed: () async {
+                              await storage.write("introDone", true);
                               Navigator.pushReplacement(
                                 context,
                                 MaterialPageRoute(
@@ -267,7 +269,7 @@ class _IntroPageState extends State<IntroPage> {
                     ),
                     Expanded(
                       child: CustomFilledButton(
-                        onPressed: () {
+                        onPressed: () async {
                           if (nextClickedNo < description.length) {
                             controller.animateToPage(
                               nextClickedNo++,
@@ -275,6 +277,7 @@ class _IntroPageState extends State<IntroPage> {
                               curve: Curves.easeOut,
                             );
                           } else if (nextClickedNo == description.length) {
+                            await storage.write("introDone", true);
                             Navigator.pushReplacement(
                               context,
                               MaterialPageRoute(

@@ -2,9 +2,9 @@ import 'dart:io';
 
 import 'package:audioplayers/audioplayers.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:direct_caller_sim_choice/direct_caller_sim_choice.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_phone_direct_caller/flutter_phone_direct_caller.dart';
 import 'package:intl/intl.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -58,21 +58,21 @@ class _GroupChatState extends State<GroupChat> {
               onPressed: () async {
                 await HapticFeedback.vibrate();
                 if (Platform.isAndroid) {
-                  PermissionStatus? perm;
+                  PermissionStatus? perm, perm2;
                   if (!(await Permission.phone.isGranted)) {
                     perm = await Permission.phone.request();
-
-                    if (perm.isDenied) {
+                    perm2 = await Permission.contacts.request();
+                    if (perm.isDenied && perm2.isDenied) {
                       return;
                     }
                     // } else {
-                    final DirectCaller directCaller = DirectCaller();
-                    directCaller.makePhoneCall('1090');
                   }
+                  const number = '1091'; //set the number here
+                  bool? res = await FlutterPhoneDirectCaller.callNumber(number);
                 } else {
                   canLaunchUrl(Uri(
                     scheme: 'tel',
-                    path: '+911090',
+                    path: '1091',
                   ));
                 }
               },
