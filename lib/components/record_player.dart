@@ -7,11 +7,14 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:overlay_support/overlay_support.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 class RecordPlayerLocal extends StatefulWidget {
-  const RecordPlayerLocal({Key? key, this.url, required this.onPressed, this.isEmergency = true}) : super(key: key);
+  const RecordPlayerLocal(
+      {Key? key, this.url, required this.onPressed, this.isEmergency = true})
+      : super(key: key);
   final String? url;
   final VoidCallback onPressed;
   final bool isEmergency;
@@ -30,35 +33,70 @@ class _RecordPlayerLocalState extends State<RecordPlayerLocal> {
   Duration duration = Duration.zero;
   Duration position = Duration.zero;
   String fileName = 'audio';
-  String fileExtension = '.aac';
-  String directoryPath = '/storage/emulated/0/SoundRecorder';
+  String fileExtension = '.mp3';
+  // String directoryPath = '/storage/emulated/0/SoundRecorder';
+  Future<bool> _requestPermission(Permission p) => p.request().isGranted;
+  Future<bool> _hasAcceptedPermissions() async {
+    if (Platform.isAndroid) {
+      if (await _requestPermission(Permission.storage) &&
+          // access media location needed for android 10/Q
+          await _requestPermission(Permission.accessMediaLocation) &&
+          // manage external storage needed for android 11/R
+          await _requestPermission(Permission.manageExternalStorage)) {
+        return true;
+      } else {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(const SnackBar(content: Text("Permission Denied")));
+        return false;
+      }
+    }
+    if (Platform.isIOS) {
+      if (await _requestPermission(Permission.photos)) {
+        return true;
+      } else {
+        return false;
+      }
+    } else {
+      ScaffoldMessenger.of(context)
+          .showSnackBar(const SnackBar(content: Text("Permission Denied")));
+      // not android or ios
+      return false;
+    }
+  }
 
   void _createFile() async {
-    // PermissionStatus status = await Permission.storage.request();
-    // PermissionStatus status1 = await Permission.accessMediaLocation.request();
-    // PermissionStatus status = await Permission.audio.request();
-    var status = await Permission.storage.request();
-    await Permission.audio.request();
-    Directory _directory = Directory("");
-    if (!status.isGranted) {
-      // If not we will ask for permission first
-      status = await Permission.storage.request();
-      _directory = Directory(directoryPath);
-
-      // await Permission.manageExternalStorage.request();
+    if (!(await _hasAcceptedPermissions())) return;
+    Directory? directory;
+    try {
+      if (Platform.isIOS) {
+        directory = await getApplicationDocumentsDirectory();
+      } else {
+        directory = Directory('/storage/emulated/0/Download');
+        // Put file in global download folder, if for an unknown reason it didn't exist, we fallback
+        // ignore: avoid_slow_async_io
+        if (!await directory.exists()) {
+          directory = await getExternalStorageDirectory();
+        }
+      }
+    } catch (err, stack) {
+      print("Cannot get download folder path");
+      return;
     }
-    if (status.isDenied) {
-      _directory = (await getExternalStorageDirectory())!;
 
-      print('Permission Denied');
+    Directory _directory = Directory("dir");
+    if (Platform.isAndroid) {
+      _directory = Directory("/storage/emulated/0/Download/Mahika");
+    } else {
+      _directory = await getApplicationDocumentsDirectory();
     }
-    print(_directory.path);
-    // print('status $status   -> $status2');
 
-    // if (status.isGranted) {
-    var _completeFileName = DateTime.now().toUtc().toIso8601String();
     final exPath = _directory.path;
+    print("Saved Path: $exPath");
     await Directory(exPath).create(recursive: true);
+    // await Permission.manageExternalStorage.request();
+
+    print(exPath);
+    var _completeFileName = DateTime.now().toUtc().toIso8601String();
 
     File file = File(widget.url! ?? "");
     //write to file
@@ -66,6 +104,8 @@ class _RecordPlayerLocalState extends State<RecordPlayerLocal> {
     File writeFile = File("$exPath/$_completeFileName$fileExtension");
     await writeFile.writeAsBytes(bytes);
     print(writeFile.path);
+    Navigator.pop(context);
+
     // }
   }
 
@@ -130,7 +170,7 @@ class _RecordPlayerLocalState extends State<RecordPlayerLocal> {
     super.initState();
     print(widget.url);
     // _createDirectory();
-    _createFile();
+    // _createFile();
     setAudio();
     // if(widget.isEmergency) {
     timer = Timer.periodic(const Duration(seconds: 1), (time) {
@@ -143,19 +183,25 @@ class _RecordPlayerLocalState extends State<RecordPlayerLocal> {
     });
     // }
     audioPlayer.onPlayerStateChanged.listen((state) {
-      setState(() {
-        isPlaying = state == PlayerState.playing;
-      });
+      if (mounted) {
+        setState(() {
+          isPlaying = state == PlayerState.playing;
+        });
+      }
     });
     audioPlayer.onDurationChanged.listen((newDuration) {
-      setState(() {
-        duration = newDuration;
-      });
+      if (mounted) {
+        setState(() {
+          duration = newDuration;
+        });
+      }
     });
     audioPlayer.onPositionChanged.listen((newPosition) {
-      setState(() {
-        position = newPosition;
-      });
+      if (mounted) {
+        setState(() {
+          position = newPosition;
+        });
+      }
     });
   }
 
@@ -241,9 +287,8 @@ class _RecordPlayerLocalState extends State<RecordPlayerLocal> {
                           onPressed: disableCancel
                               ? null
                               : () {
-
-                            Navigator.pop(context);
-                          },
+                                  _createFile();
+                                },
                           child: Text(
                             disableCancel ? '$tick s' : 'Cancel',
                             style: GoogleFonts.poppins(),
@@ -299,7 +344,7 @@ class _RecordPlayerLocalState extends State<RecordPlayerLocal> {
                           ),
                           style: FilledButton.styleFrom(
                               backgroundColor:
-                              widget.isEmergency ? Colors.red : null),
+                                  widget.isEmergency ? Colors.red : null),
                         ),
                       ],
                     )
@@ -351,9 +396,9 @@ class _RecordPlayerState extends State<RecordPlayer> {
     super.initState();
     print(widget.url);
     setAudio();
-    audioPlayer.onPlayerStateChanged.listen((state) async{
+    audioPlayer.onPlayerStateChanged.listen((state) async {
       print(state);
-      if(state == PlayerState.completed) {
+      if (state == PlayerState.completed) {
         await setAudio();
       }
       setState(() {

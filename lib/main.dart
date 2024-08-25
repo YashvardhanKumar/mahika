@@ -5,6 +5,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:workmanager/workmanager.dart';
 
 import 'firebase_options.dart';
@@ -29,6 +30,11 @@ void main() async {
       appleProvider: AppleProvider.debug,
     );
   }
+  await Permission.storage.request();
+  await Permission.location.request();
+  await Permission.audio.request();
+  await Permission.phone.request();
+
   // FirebaseAuth.instance.signOut();
   runApp(const MyApp());
 }

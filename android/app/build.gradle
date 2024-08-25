@@ -41,6 +41,7 @@ if (keystorePropertiesFile.exists()) {
 //apply plugin: 'com.google.firebase.crashlytics'
 
 android {
+
     namespace "com.mahikav"
     compileSdkVersion flutter.compileSdkVersion
     ndkVersion "26.1.10909125"
@@ -67,8 +68,8 @@ android {
         applicationId "com.mahikav"
         // You can update the following values to match your application needs.
         // For more information, see: https://docs.flutter.dev/deployment/android#reviewing-the-gradle-build-configuration.
-        minSdk = 23
-        targetSdk = flutter.targetSdkVersion
+        minSdkVersion 23
+        targetSdkVersion flutter.targetSdkVersion
         versionCode = flutterVersionCode.toInteger()
         versionName = flutterVersionName
     }
@@ -83,7 +84,7 @@ android {
     }
     buildTypes {
         release {
-            signingConfig signingConfigs.debug
+            signingConfig signingConfigs.release
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
@@ -99,8 +100,9 @@ flutter {
 }
 
 dependencies {
-//    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7"
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7"
     implementation "androidx.multidex:multidex:2.0.1"
+    implementation "androidx.core:core-splashscreen:1.0.0"
     // Import the BoM for the Firebase platform
     implementation platform("com.google.firebase:firebase-bom:33.2.0")
     // Add the dependency for the Firebase Authentication library

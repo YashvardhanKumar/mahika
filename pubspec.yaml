@@ -44,7 +44,6 @@ dependencies:
   flutter_sound: ^9.2.13
   geolocator: ^12.0.0
   geocoding: ^3.0.0
-  flutter_launcher_icons: ^0.13.1
   permission_handler: ^11.0.1
   audioplayers: ^6.0.0
   file_picker: ^8.0.7
@@ -68,13 +67,25 @@ dependencies:
   flutter_phone_direct_caller: ^2.1.1
   workmanager: ^0.5.2
   get_storage: ^2.1.1
+  flutter_native_splash: ^2.4.1
 
-flutter_launcher_icons:
-  android: true
-  ios: true
-  image_path: "assets/icon/logo.png"
-  min_sdk_android: 21 # android min sdk min:16, default 21
-  adaptive_icon_foreground: #01D6EC
+
+flutter_native_splash:
+  color: "#ffffff"
+  image: assets/icon/logo.png
+  branding: assets/branding_logo_dark_mahika.png
+  branding_bottom_padding: 24
+  color_dark: "#121212"
+  image_dark: assets/icon/logo.png
+  branding_dark: assets/branding_logo_mahika.png
+
+  android_12:
+    image: assets/icon/logo.png
+    icon_background_color: "#ffffff"
+    image_dark: assets/icon/logo.png
+    icon_background_color_dark: "#121212"
+
+  web: false
 
 dev_dependencies:
   flutter_test:
